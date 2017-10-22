@@ -1,5 +1,9 @@
 def extend(klass):
     # type: (type) -> callable
+    """
+    Decorate a method so that it extends a class-like object
+    (i.e. also a module), the givne klass.
+    """
     def extender(extension_method):
         # type: (callable) -> None
         setattr(klass, extension_method.func_name, extension_method)
@@ -10,6 +14,7 @@ def extend(klass):
 
 def override(klass):
     # type: (type) -> callable
+    """Decorate a method so that it overrides a method already in a class-like object, klass."""
     def overrider(override_method):
         # type: (callable) -> None
         func_name = override_method.func_name

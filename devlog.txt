@@ -12,3 +12,6 @@ Added most of read_or_edit_story and create/add_new_story routes
 senK -- 2017-10-22 03:40:30
 Added edited_story route to handle submission of story edits/creation.
 
+senK -- 2017-10-22 16:34:01
+Added comments for almost all public functions and methods.
+

@@ -11,8 +11,9 @@ from werkzeug.datastructures import ImmutableMultiDict
 
 from util.flask_utils import preconditions, post_only, reroute_to, form_contains, session_contains
 
-from storytelling_db import StoryTellingDatabase, User, Story, Edit
+from storytelling_db import StoryTellingDatabase, User, Story, Edit, StoryTellingException
 
+"""Keys in session."""
 USER_KEY = 'user'
 STORY_KEY = 'story'
 EDIT_KEY = 'edit'
@@ -21,26 +22,31 @@ IS_NEW_STORY_KEY = 'is_new_story'
 
 def get_user():
     # type: () -> User
+    """Get User in session."""
     return session[USER_KEY]
 
 
 def get_story():
     # type: () -> Story
+    """Get Story in session."""
     return session[STORY_KEY]
 
 
 def pop_is_new_story():
     # type: () -> bool
+    """Pop is new story from session."""
     return session.pop(IS_NEW_STORY_KEY)
 
 
 def pop_story():
     # type: () -> Story
+    """Pop Story from session."""
     return session.pop(STORY_KEY)
 
 
 def pop_edit():
     # type: () -> Edit
+    """Pop Edit from session."""
     return session.pop(EDIT_KEY)
 
 
@@ -60,6 +66,7 @@ def welcome():
 
 def get_user_info():
     # type: () -> (str, str)
+    """Get username and password from request.form."""
     form = request.form  # type: ImmutableMultiDict
     return form['username'], form['password']
 
@@ -70,6 +77,7 @@ def login():
     return render_template('login.jinja2')
 
 
+"""Precondition decorator rerouting to login if is_logged_in isn't True."""
 logged_in = preconditions(login, is_logged_in)
 
 
@@ -77,11 +85,18 @@ logged_in = preconditions(login, is_logged_in)
 @preconditions(login, post_only, form_contains('username', 'password'))
 def auth():
     # type: () -> Response
+    """
+    Authorize and login a User with username and password from POST form.
+    If username and password is wrong, flash message raised by db.
+    """
     username, password = get_user_info()
-    user = db.get_user(username, password)
-    if user is None:
-        flash('wrong username or password')
+
+    try:
+        user = db.get_user(username, password)
+    except StoryTellingException as e:
+        flash(e.message)
         return reroute_to(login)
+
     session[USER_KEY] = user
     return reroute_to(home)
 
@@ -90,6 +105,7 @@ def auth():
 @logged_in
 def home():
     # type: () -> Response
+    """Display a User's home page with all of his edited and unedited Stories."""
     user = get_user()
     return render_template('home.jinja2',
                            edited_stories=db.get_edited_stories(user),
@@ -101,6 +117,13 @@ def home():
 @preconditions(home, post_only, form_contains('story_id', 'storyname'))
 def read_or_edit_story():
     # type: () -> Response
+    """
+    Open Story specified through form for either reading or editing,
+    depending on if the User has edited the Story yet.
+
+    If the story_id, storyname pair cannot be verified,
+    reroute to home.
+    """
     story_id = int(request.form['story_id'])
     storyname = request.form['storyname']
     story = Story(story_id, storyname)
@@ -121,6 +144,14 @@ def read_or_edit_story():
 @preconditions(read_or_edit_story, post_only,
                session_contains(STORY_KEY), form_contains('text'))
 def edit_story():
+    # type: () -> Response
+    """
+    Edit the Story the User already selected with the text passed through the POST form.
+    Reroute to edited_story to display post-edit page with Edit and not_new_story set in session.
+
+    Check again if User can edit the Story.  If not, reroute to home.
+    """
+
     story = get_story()
     user = get_user()
 
@@ -145,6 +176,16 @@ def create_new_story():
 @logged_in
 @preconditions(create_new_story, post_only, form_contains('storyname', 'text'))
 def add_new_story():
+    # type: () -> Response
+    """
+    Add the new Story created by the User
+    with the storyname and initial text passed through the POST form.
+    Reroute to edited_story display post-creation page
+    with Story, Edit, and is_new_story passed through session.
+
+    If storyname already exists, reroute to create_new_story with flash.
+    """
+
     storyname = request.form['storyname']
 
     if db.story_exists(storyname):
@@ -164,6 +205,11 @@ def add_new_story():
 @logged_in
 @preconditions(home, post_only, session_contains(STORY_KEY, EDIT_KEY))
 def edited_story():
+    # type: () -> Response
+    """
+    Display post-edit or post-creation page,
+    with Story, Edit, and is_new_story passed through session.
+    """
     return render_template('edited_story.jinja2',
                            story=pop_story(),
                            edit=pop_edit(),

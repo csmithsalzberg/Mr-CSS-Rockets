@@ -1,19 +1,17 @@
 from __future__ import print_function
 
-from collections import Iterable
 from sys import stderr
 
-import flask
 from flask import Flask
 from flask import Response
 from flask import redirect
 from flask import request
-from flask import url_for
 from flask import session
+from flask import url_for
 
 # noinspection PyUnresolvedReferences
 import route_extension_methods
-from oop import extend, override
+from oop import extend
 
 
 def reroute_to(route_func):
@@ -75,6 +73,18 @@ def _debug(obj):
 
 def preconditions(backup_route, *precondition_funcs):
     # type: (callable, callable | None) -> callable
+    """
+    Assert that all the given precondition_funcs are True when a route is called.
+    If any of them aren't, reroute to the given backup route.
+
+    If the attribute .debug is True for any of the precondition funcs,
+    an error message will printed in the console.
+
+    :param backup_route: the backup route to reroute to if any preconditions aren't met
+    :param precondition_funcs: the precondition functions that must be met
+    :return: the decorated route
+    """
+
     def decorator(route):
         # type: (callable) -> callable
         def debug(precondition):
@@ -107,14 +117,17 @@ preconditions.debug = False
 
 def post_only():
     # type: () -> bool
+    """Assert the route is using POST."""
     return request.method.lower() == 'post'
 
 
 def dict_contains(map, *keys):
     # type: (dict[T, any], list[T]) -> callable
+    """Assert a dict contains all the given keys."""
+
     def precondition():
         # type: () -> bool
-        # check if map contains all keys
+        # check if map contains all keys (using subset)
         return set(keys) <= map.viewkeys()
 
     return precondition
@@ -122,9 +135,11 @@ def dict_contains(map, *keys):
 
 def form_contains(*fields):
     # type: (list[str]) -> callable
+    """Assert request.form contains all the given fields."""
     return dict_contains(request.form, *fields)
 
 
 def session_contains(*keys):
     # type: (list[any]) -> callable
+    """Assert session contains all the given keys."""
     return dict_contains(session, *keys)
