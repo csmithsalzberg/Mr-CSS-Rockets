@@ -27,6 +27,9 @@ class Database(object):
         query = 'SELECT COUNT(*) FROM sqlite_master WHERE type="table" AND name=?'
         return self.cursor.execute(query, [Database.desanitize(table_name)]).fetchone()[0] > 0
 
+    def result_exists(self):
+        return self.cursor.fetchone() is not None
+
     def commit(self):
         # type: () -> None
         self.conn.commit()

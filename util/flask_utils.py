@@ -9,10 +9,10 @@ from flask import Response
 from flask import redirect
 from flask import request
 from flask import url_for
+from flask import session
 
 # noinspection PyUnresolvedReferences
 import route_extension_methods
-from default_template_context import get_default_template_context
 from oop import extend, override
 
 
@@ -68,24 +68,6 @@ def reroute_from(app, rule, **options):
     return decorator
 
 
-OVERRIDE_RENDER_TEMPLATE = False
-
-if OVERRIDE_RENDER_TEMPLATE:
-    @override(flask)
-    def render_template(_super, template_name_or_list, **context):
-        # type: (callable, str | Iterable[str], dict[str, any]) -> Response
-        """
-        Wrap flask.render_template to add default template args.
-
-        :param _super: super method
-        :param template_name_or_list: the template name(s)
-        :param context: original context
-        :return: the Response from flask.render_template
-        """
-        return _super(template_name_or_list,
-                      **get_default_template_context(context))
-
-
 def _debug(obj):
     # type: (any) -> bool
     return hasattr(obj, 'debug') and obj.debug
@@ -126,3 +108,23 @@ preconditions.debug = False
 def post_only():
     # type: () -> bool
     return request.method.lower() == 'post'
+
+
+def dict_contains(map, *keys):
+    # type: (dict[T, any], list[T]) -> callable
+    def precondition():
+        # type: () -> bool
+        # check if map contains all keys
+        return set(keys) <= map.viewkeys()
+
+    return precondition
+
+
+def form_contains(*fields):
+    # type: (list[str]) -> callable
+    return dict_contains(request.form, *fields)
+
+
+def session_contains(*keys):
+    # type: (list[any]) -> callable
+    return dict_contains(session, *keys)

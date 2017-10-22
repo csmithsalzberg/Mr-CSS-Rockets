@@ -1,9 +1,11 @@
 from __future__ import print_function
 
 from collections import namedtuple
+from datetime import datetime
 
+import dateutil.parser
 from passlib.hash import pbkdf2_sha256
-from typing import Generator
+from typing import Generator, Tuple
 
 from util.db import Database
 
@@ -22,7 +24,8 @@ User = namedtuple('User', ['id', 'username'])  # type: (int, unicode)
 
 Story = namedtuple('Story', ['id', 'storyname'])  # type: (int, unicode)
 
-Edit = namedtuple('Edit', ['story', 'user', 'text'])  # type: (Story, User, unicode)
+Edit = namedtuple('Edit',
+                  ['story', 'user', 'text', 'time'])  # type: (Story, User, unicode, datetime)
 
 
 class StoryTellingException(Exception):
@@ -59,15 +62,19 @@ class StoryTellingDatabase(object):
     def _create_users_table(self):
         self.db.cursor.execute(
             'CREATE TABLE IF NOT EXISTS '
-            'users(id INTEGER PRIMARY KEY, username TEXT, password TEXT)')
+            'users(id INTEGER PRIMARY KEY, username TEXT, password TEXT, start_time TEXT)')
 
     def _create_stories_table(self):
         self.db.cursor.execute(
-            'CREATE TABLE IF NOT EXISTS stories(id INTEGER PRIMARY KEY, storyname TEXT)')
+            'CREATE TABLE IF NOT EXISTS '
+            'stories(id INTEGER PRIMARY KEY, storyname TEXT, start_time TEXT)')
 
     def _create_edits_table(self):
         self.db.cursor.execute(
-            'CREATE TABLE IF NOT EXISTS edits(story_id INTEGER, user_id INTEGER, text TEXT)')
+            'CREATE TABLE IF NOT EXISTS '
+            'edits(story_id INTEGER, user_id INTEGER, text TEXT, time TEXT,'
+            'FOREIGN KEY (story_id) REFERENCES stories(id),'
+            'FOREIGN KEY (user_id) REFERENCES users(id))')
 
     def _create_tables(self):
         self._create_users_table()
@@ -95,19 +102,25 @@ class StoryTellingDatabase(object):
             raise StoryTellingException('wrong password')
         return User(user_id, username)
 
-    def is_user(self, username, password):
+    def verify_user(self, username, password):
         # type: (unicode, unicode) -> bool
         return self.get_user(username, password) is not None
 
     def user_exists(self, username):
         # type: (unicode) -> bool
         self.db.cursor.execute('SELECT id FROM users WHERE username = ?', [username])
-        return self.db.cursor.fetchone() is not None
+        return self.db.result_exists()
 
     def story_exists(self, storyname):
         # type: (unicode) -> bool
         self.db.cursor.execute('SELECT id FROM stories WHERE storyname = ?', [storyname])
-        return self.db.cursor.fetchone() is not None
+        return self.db.result_exists()
+
+    def verify_story(self, story):
+        # type: (Story) -> bool
+        self.db.cursor.execute('SELECT id FROM stories WHERE id = ? AND storyname = ?',
+                               [story.id, story.storyname])
+        return self.db.result_exists()
 
     def _get_stories(self, user, edited):
         # type: (User, bool) -> Generator[Story, None, None]
@@ -127,15 +140,34 @@ class StoryTellingDatabase(object):
 
     def get_edits(self, story):
         # type: (Story) -> Generator[Edit, None, None]
-        for user_id, username, text in self.db.cursor.execute(
-                'SELECT users.id, username, text FROM edits, users, stories WHERE stories.id = ?',
+        for user_id, username, text, time in self.db.cursor.execute(
+                'SELECT users.id, username, text, time '
+                'FROM edits, users, stories '
+                'WHERE stories.id = ?',
                 [story.id]):
-            yield Edit(Story(story.id, story.storyname), User(user_id, username), text)
+            time = dateutil.parser.parse(time)
+            yield Edit(Story(story.id, story.storyname), User(user_id, username), text, time)
 
     def get_editors(self, story):
         # type: (Story) -> Generator[User, None, None]
         for edit in self.get_edits(story):
             yield edit.user
+
+    def _get_start_time(self, table, user_or_story):
+        # type: (User | Story) -> datetime
+        # should use some sort of table inheritance if such a thing exists
+        self.db.cursor.execute('SELECT start_time FROM {} WHERE id = ?'.format(table),
+                               [user_or_story.id])
+        time = self.db.cursor.fetchone()[0]
+        return dateutil.parser.parse(time)
+
+    def get_user_start_time(self, user):
+        # type: (User) -> datetime
+        return self._get_start_time('users', user)
+
+    def get_story_start_time(self, story):
+        # type: (Story) -> datetime
+        return self._get_start_time('stories', story)
 
     def can_edit(self, story, user):
         # type: (Story, User) -> bool
@@ -147,8 +179,8 @@ class StoryTellingDatabase(object):
     def _add_user_hard(self, username, password):
         # type: (unicode, unicode) -> User
         hashed_password = hash_password(password)
-        self.db.cursor.execute('INSERT INTO users VALUES (NULL, ?, ?)',
-                               [username, hashed_password])
+        self.db.cursor.execute('INSERT INTO users VALUES (NULL, ?, ?, ?)',
+                               [username, hashed_password, datetime.now().isoformat()])
         user_id = self.db.cursor.lastrowid
         self.commit()
         return User(user_id, username)
@@ -161,28 +193,31 @@ class StoryTellingDatabase(object):
 
     def _create_story_hard(self, storyname):
         # type: (unicode) -> Story
-        self.db.cursor.execute('INSERT INTO stories VALUES (NULL, ?)', [storyname])
+        self.db.cursor.execute('INSERT INTO stories VALUES (NULL, ?, ?)',
+                               [storyname, datetime.now().isoformat()])
         story_id = self.db.cursor.lastrowid
         self.commit()
         return Story(story_id, storyname)
 
     def _add_story_hard(self, storyname, user, text):
-        # type: (unicode, User, unicode) -> (Story, Edit)
+        # type: (unicode, User, unicode) -> Tuple[Story, Edit]
         story = self._create_story_hard(storyname)
         edit = self._edit_story_hard(story, user, text)
         return story, edit
 
     def add_story(self, storyname, user, text):
-        # type: (unicode, User, unicode) -> (Story, Edit) | None
+        # type: (unicode, User, unicode) -> Tuple[Story, Edit] | None
         if self.story_exists(storyname):
             raise StoryTellingException('story already exists')
         return self._add_story_hard(storyname, user, text)
 
     def _edit_story_hard(self, story, user, text):
         # type: (Story, User, unicode) -> Edit
-        self.db.cursor.execute('INSERT INTO edits VALUES (?, ?, ?)', [story.id, user.id, text])
+        time = datetime.now()
+        self.db.cursor.execute('INSERT INTO edits VALUES (?, ?, ?, ?)',
+                               [story.id, user.id, text, time.isoformat()])
         self.commit()
-        return Edit(story, user, text)
+        return Edit(story, user, text, time)
 
     def edit_story(self, story, user, text):
         # type: (Story, User, unicode) -> Edit | None
@@ -191,7 +226,7 @@ class StoryTellingDatabase(object):
         return self._edit_story_hard(story, user, text)
 
 
-if __name__ == '__main__':
+def main():
     with StoryTellingDatabase() as db:
         db.clear()
 
@@ -213,3 +248,7 @@ if __name__ == '__main__':
             db.edit_story(story, user, 'Second line.')
         except StoryTellingException as e:
             print(e.message)
+
+
+if __name__ == '__main__':
+    main()
