@@ -3,6 +3,16 @@ import sys
 context = sys.modules[__name__].__dict__  # type: dict[str, any]
 
 
+def _filter_hidden(dictionary):
+    # type: (dict[str, any]) -> dict[str, any]
+    """Filters out any attribute starting with _, which are supposed to be hidden."""
+    return {k: v for k, v in dictionary.viewitems() if k.startswith('_')}
+
+
+# add non-hidden builtins
+context.update(_filter_hidden(__builtins__.__dict__))
+
+
 def splat():
     # type: () -> dict[str, any]
     return context
@@ -35,3 +45,12 @@ def br(n):
     :return: n <br> tags
     """
     return repeat('<br>', n)
+
+
+# remove hiddens
+context = _filter_hidden(context)
+
+if __name__ == '__main__':
+    from pprint import pprint
+
+    pprint(context)

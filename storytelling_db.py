@@ -10,16 +10,31 @@ from typing import Generator, Tuple
 from util.db import Database
 
 DB_SCHEMA = dict(
-    users='CREATE TABLE IF NOT EXISTS '
-          'users(id INTEGER PRIMARY KEY, username TEXT, password TEXT, start_time TEXT)',
+    users='''
+        CREATE TABLE IF NOT EXISTS users(
+            id INTEGER PRIMARY KEY, 
+            username TEXT NOT NULL,
+            password TEXT NOT NULL,
+            start_time TEXT NOT NULL
+        )''',
 
-    stories='CREATE TABLE IF NOT EXISTS '
-            'stories(id INTEGER PRIMARY KEY, storyname TEXT, start_time TEXT)',
+    stories='''
+        CREATE TABLE IF NOT EXISTS stories(
+            id INTEGER PRIMARY KEY,
+            storyname TEXT NOT NULL,
+            start_time TEXT NOT NULL
+        )''',
 
-    edits='CREATE TABLE IF NOT EXISTS '
-          'edits(story_id INTEGER, user_id INTEGER, text TEXT, time TEXT,'
-          'FOREIGN KEY(story_id) REFERENCES stories(id),'
-          'FOREIGN KEY(user_id) REFERENCES users(id))',
+    edits='''
+        CREATE TABLE IF NOT EXISTS edits(
+            story_id INTEGER, 
+            user_id INTEGER,
+            text TEXT NOT NULL,
+            time TEXT NOT NULL,
+            PRIMARY KEY (story_id, user_id),
+            FOREIGN KEY (story_id) REFERENCES stories(id),
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        )''',
 )
 
 
