@@ -9,3 +9,6 @@ senK -- 2017-10-22 03:12:00
 Added most of read_or_edit_story and create/add_new_story routes
     and worked on app.py route skeletons.
 
+senK -- 2017-10-22 03:40:30
+Added edited_story route to handle submission of story edits/creation.
+

@@ -11,11 +11,38 @@ from werkzeug.datastructures import ImmutableMultiDict
 
 from util.flask_utils import preconditions, post_only, reroute_to, form_contains, session_contains
 
-from storytelling_db import StoryTellingDatabase, User, Story
+from storytelling_db import StoryTellingDatabase, User, Story, Edit
 
 USER_KEY = 'user'
 STORY_KEY = 'story'
 EDIT_KEY = 'edit'
+IS_NEW_STORY_KEY = 'is_new_story'
+
+
+def get_user():
+    # type: () -> User
+    return session[USER_KEY]
+
+
+def get_story():
+    # type: () -> Story
+    return session[STORY_KEY]
+
+
+def pop_is_new_story():
+    # type: () -> bool
+    return session.pop(IS_NEW_STORY_KEY)
+
+
+def pop_story():
+    # type: () -> Story
+    return session.pop(STORY_KEY)
+
+
+def pop_edit():
+    # type: () -> Edit
+    return session.pop(EDIT_KEY)
+
 
 app = Flask(__name__)
 
@@ -59,11 +86,6 @@ def auth():
     return reroute_to(home)
 
 
-def get_user():
-    # type: () -> User
-    return session[USER_KEY]
-
-
 @app.route('/home')
 @logged_in
 def home():
@@ -87,10 +109,29 @@ def read_or_edit_story():
     if not db.verify_story(story):
         return reroute_to(home)
 
+    session[STORY_KEY] = story
     edits = db.get_edits(story)
     return render_template('story.jinja2',
                            edits=edits,
                            editing=db.can_edit(story, get_user()))
+
+
+@app.route('/edit', methods=['get', 'post'])
+@logged_in
+@preconditions(read_or_edit_story, post_only,
+               session_contains(STORY_KEY), form_contains('text'))
+def edit_story():
+    story = get_story()
+    user = get_user()
+
+    if not db.can_edit(story, user):
+        return reroute_to(home)
+
+    text = request.form['text']
+    edit = db.edit_story(story, user, text)
+    session[EDIT_KEY] = edit
+    session[IS_NEW_STORY_KEY] = False
+    return reroute_to(edited_story)
 
 
 @app.route('/create_new_story')
@@ -115,16 +156,18 @@ def add_new_story():
 
     session[STORY_KEY] = story
     session[EDIT_KEY] = edit
-    return reroute_to(created_new_story)
+    session[IS_NEW_STORY_KEY] = True
+    return reroute_to(edited_story)
 
 
-@app.route('/created_new_story', methods=['get', 'post'])
+@app.route('/edited_story', methods=['get', 'post'])
 @logged_in
 @preconditions(home, post_only, session_contains(STORY_KEY, EDIT_KEY))
-def created_new_story():
-    return render_template('created_new_story.jinja2',
-                           story=session[STORY_KEY],
-                           edit=session[EDIT_KEY])
+def edited_story():
+    return render_template('edited_story.jinja2',
+                           story=pop_story(),
+                           edit=pop_edit(),
+                           new_story=pop_is_new_story())
 
 
 if __name__ == '__main__':
