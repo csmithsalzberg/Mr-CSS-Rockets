@@ -15,3 +15,5 @@ Added edited_story route to handle submission of story edits/creation.
 senK -- 2017-10-22 16:34:01
 Added comments for almost all public functions and methods.
 
+ruvinshteynM -- 2017-10-24 13:19:04
+Created minimal versions of base.jinja2 and base_logged.jinja2; started minimal version of home.jinja2
