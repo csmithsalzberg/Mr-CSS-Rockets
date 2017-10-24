@@ -1,10 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
 
+<head>
+  {% block head %}
+  <title>{% block title %}{{TITLE}}{% endblock title %}</title>
+  {% endblock head %}
+</head>
+
+<body>
+  {% block body %}
+  
+  {% endblock body %}
 </body>
+
 </html>
