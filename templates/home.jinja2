@@ -1,4 +1,16 @@
+<!DOCTYPE html>
 {% extends "base_logged.jinja2" %}
 
-Edited Stories:<br>
+<h2>Edited Stories:</h2><br>
+<form action="/story" method="post">
+{% for E in edited_stories %}
+<button name = "story" value = "{{E.storyname}}">{{s.storyname}}</button>{{br(2)}}
+{% endfor %}
 
+{{br(4)}}
+
+<h2>Unedited Stories:</h2><br>
+{% for U in unedited_stories %}
+<button name = "story" value = "{{U.storyname}}">{{s.storyname}}</button>{{br(2)}}
+{% endfor %}
+</form>
