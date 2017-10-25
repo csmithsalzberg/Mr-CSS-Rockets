@@ -66,3 +66,10 @@ Added comments for almost all public functions and methods.
 
 ruvinshteynM -- 2017-10-24 13:19:04
 Created minimal versions of base.jinja2 and base_logged.jinja2; started minimal version of home.jinja2
+
+senK -- 2017-10-25 14:19:59
+Added JS for automatic and simpler form submission in homepage links.  Probably won't be used, but I'm adding it anyways in case since I already wrote it.
+
+senK -- 2017-10-25 14:22:13
+Fixed a few bugs and rearranged some flask routes that whose design changed.
+

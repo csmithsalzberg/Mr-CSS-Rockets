@@ -8,13 +8,13 @@ from flask import redirect
 from flask import request
 from flask import session
 from flask import url_for
-
 # noinspection PyUnresolvedReferences
-import route_extension_methods
+from typing import KeysView
+
 from oop import extend
 
 
-def reroute_to(route_func):
+def reroute_to(route_func, *args, **kwargs):
     # type: (callable) -> Response
     """
     Wrap redirect(url_for(...)) for route.func_name.
@@ -22,7 +22,23 @@ def reroute_to(route_func):
     :param route_func: the route function to redirect to
     :return: the Response from redirect(url_for(route.func_name))
     """
+    session.args = args
+    session.kwargs = kwargs
     return redirect(url_for(route_func.func_name))
+
+
+def bind_args(route_func):
+    # type: (callable) -> callable
+    """
+    Wrap a route that calls the original route
+    with args and kwargs passed through the session.
+    """
+
+    def delegating_route():
+        d = session.__dict__  # type: dict[str, any]
+        return route_func(*d.pop('args', ()), **d.pop('kwargs', {}))
+
+    return delegating_route()
 
 
 @extend(Flask)
@@ -115,31 +131,80 @@ def preconditions(backup_route, *precondition_funcs):
 preconditions.debug = False
 
 
-def post_only():
-    # type: () -> bool
-    """Assert the route is using POST."""
-    return request.method.lower() == 'post'
-
-
-def dict_contains(map, *keys):
-    # type: (dict[T, any], list[T]) -> callable
-    """Assert a dict contains all the given keys."""
+def method_is(http_method):
+    # type: (str) -> callable
+    """Assert the route is using the given HTTP method."""
+    http_method = http_method.lower()
 
     def precondition():
         # type: () -> bool
-        # check if map contains all keys (using subset)
-        return set(keys) <= map.viewkeys()
+        return request.method.lower() == http_method
 
     return precondition
+
+
+post_only = method_is('post')
+
+
+def methods_are(*http_methods):
+    # type: (list[str]) -> callable
+    """Assert the route is using one of the given HTTP methods."""
+    http_methods = {http_method.lower() for http_method in http_methods}
+
+    def precondition():
+        # type: () -> bool
+        return request.method.lower() in http_methods
+
+    return precondition
+
+
+def set_contains(set_, *values):
+    # type: (set[T] | KeysView[T], list[T]) -> callable
+    """Assert a set contains all the given values."""
+    values = set(values)
+
+    def precondition():
+        # type: () -> bool
+        # check if set contains all values (using subset)
+        return values <= set_
+
+    return precondition
+
+
+def dict_contains(dictionary, *keys):
+    # type: (dict[T, any] | KeyViewFuture, list[T]) -> callable
+    """Assert a dict contains all the given keys."""
+    keys = set(keys)
+
+    def precondition():
+        # type: () -> bool
+        # check if set contains all values (using subset)
+        return keys <= dictionary.viewkeys()
+
+    return precondition
+
+
+class KeyViewFuture(object):
+    def __init__(self, dict_supplier):
+        self.dict_supplier = dict_supplier
+
+    def viewkeys(self):
+        return self.dict_supplier().viewkeys()
 
 
 def form_contains(*fields):
     # type: (list[str]) -> callable
     """Assert request.form contains all the given fields."""
-    return dict_contains(request.form, *fields)
+    return dict_contains(KeyViewFuture(lambda: request.form), *fields)
 
 
 def session_contains(*keys):
     # type: (list[any]) -> callable
     """Assert session contains all the given keys."""
     return dict_contains(session, *keys)
+
+
+def has_attrs(obj, *attrs):
+    # type: (any, list[str]) -> callable
+    """Assert an object contains all the given fields/attributes."""
+    return dict_contains(obj.__dict__, *attrs)

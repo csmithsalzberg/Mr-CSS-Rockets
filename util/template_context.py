@@ -6,7 +6,7 @@ context = sys.modules[__name__].__dict__  # type: dict[str, any]
 def _filter_hidden(dictionary):
     # type: (dict[str, any]) -> dict[str, any]
     """Filters out any attribute starting with _, which are supposed to be hidden."""
-    return {k: v for k, v in dictionary.viewitems() if k.startswith('_')}
+    return {k: v for k, v in dictionary.viewitems() if not k.startswith('_')}
 
 
 # add non-hidden builtins

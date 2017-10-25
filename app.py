@@ -9,7 +9,8 @@ from flask import Flask, render_template, request, flash, session
 from flask import Response
 from werkzeug.datastructures import ImmutableMultiDict
 
-from util.flask_utils import preconditions, post_only, reroute_to, form_contains, session_contains
+from util.flask_utils import preconditions, post_only, reroute_to, form_contains, session_contains, \
+    bind_args
 
 from storytelling_db import StoryTellingDatabase, User, Story, Edit, StoryTellingException
 
@@ -134,9 +135,11 @@ def read_or_edit_story():
 
     session[STORY_KEY] = story
     edits = db.get_edits(story)
-    return render_template('story.jinja2',
-                           edits=edits,
-                           editing=db.can_edit(story, get_user()))
+    editing = db.can_edit(story, get_user())
+    if editing:
+        return render_template('edit_story.jinja2', last_edit=max(edits, key=Edit.order))
+    else:
+        return render_template('read_story.jinja2', edits=sorted(edits, key=Edit.order))
 
 
 @app.route('/edit', methods=['get', 'post'])

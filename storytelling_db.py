@@ -59,6 +59,7 @@ Story.__repr__ = lambda self: 'Story(%s, %s)' % self
 Edit = namedtuple('Edit',
                   ['story', 'user', 'text', 'time'])  # type: (Story, User, unicode, datetime)
 Edit.__repr__ = lambda self: 'Edit(%r, %r, %s, %s)' % self
+Edit.order = lambda self: self.time  # type: Edit -> datetime
 
 
 class StoryTellingException(Exception):
