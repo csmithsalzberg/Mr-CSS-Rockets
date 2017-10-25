@@ -1,5 +1,7 @@
 from __future__ import print_function
 
+import sqlite3
+
 __authors__ = ['Khyber Sen', 'Caleb Smith-Salzburg', 'Michael Ruvinshteyn', 'Terry Guan']
 __date__ = '2017-10-20'
 
@@ -115,7 +117,7 @@ def home():
 
 @app.route('/story', methods=['get', 'post'])
 @logged_in
-@preconditions(home, post_only, form_contains('story_id', 'storyname'))
+@preconditions(home, post_only, form_contains('story'))
 def read_or_edit_story():
     # type: () -> Response
     """
@@ -125,12 +127,11 @@ def read_or_edit_story():
     If the story_id, storyname pair cannot be verified,
     reroute to home.
     """
-    story_id = int(request.form['story_id'])
-    storyname = request.form['storyname']
-    story = Story(story_id, storyname)
-
-    # request could be tampered with, must verify story exists first
-    if not db.verify_story(story):
+    storyname = request.form(['story'])
+    try:
+        story = db.get_story(storyname)
+    except StoryTellingException as e:
+        flash(e.message)
         return reroute_to(home)
 
     session[STORY_KEY] = story

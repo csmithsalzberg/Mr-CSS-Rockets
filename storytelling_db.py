@@ -77,11 +77,11 @@ class StoryTellingDatabase(object):
     :type db: Database
     """
 
-    def __init__(self, name='data/storytelling.db'):
+    def __init__(self, path='data/storytelling.db'):
         # type: (str | unicode) -> None
         """Create DB with given name and open low level connection through `Database`"""
-        self.name = name
-        self.db = Database(name)
+        self.name = path
+        self.db = Database(path)
         self._create_tables()
 
     def commit(self):
@@ -156,6 +156,21 @@ class StoryTellingDatabase(object):
         """Check if Story with given storyname exists."""
         self.db.cursor.execute('SELECT id FROM stories WHERE storyname = ?', [storyname])
         return self.db.result_exists()
+
+    def get_story(self, storyname):
+        # type: (unicode) -> Story
+        """
+        Get Story with given storyname.
+
+        If story with given storyname doesn't exist,
+        raise `StoryTellingException` with a message.
+        """
+        self.db.cursor.execute('SELECT id FROM stories WHERE storyname = ?', [storyname])
+        result = self.db.cursor.fetchone()
+        if result is None:
+            raise StoryTellingException("story doesn't exist")
+        story_id = result[0]
+        return Story(story_id, storyname)
 
     def verify_story(self, story):
         # type: (Story) -> bool

@@ -73,3 +73,6 @@ Added JS for automatic and simpler form submission in homepage links.  Probably 
 senK -- 2017-10-25 14:22:13
 Fixed a few bugs and rearranged some flask routes that whose design changed.
 
+senK -- 2017-10-25 15:00:26
+Modified read_or_edit_story route to use only storyname from form instead of also requiring story_id, which reflects our changes in home.jinja2.
+
