@@ -1,7 +1,5 @@
 from __future__ import print_function
 
-import sqlite3
-
 __authors__ = ['Khyber Sen', 'Caleb Smith-Salzburg', 'Michael Ruvinshteyn', 'Terry Guan']
 __date__ = '2017-10-20'
 
@@ -151,7 +149,7 @@ def edit_story():
     # type: () -> Response
     """
     Edit the Story the User already selected with the text passed through the POST form.
-    Reroute to edited_story to display post-edit page with Edit and not_new_story set in session.
+    Reroute to edited_story to display post-edit page, passing Edit and not is_new_story.
 
     Check again if User can edit the Story.  If not, reroute to home.
     """
@@ -164,9 +162,7 @@ def edit_story():
 
     text = request.form['text']
     edit = db.edit_story(story, user, text)
-    session[EDIT_KEY] = edit
-    session[IS_NEW_STORY_KEY] = False
-    return reroute_to(edited_story)
+    return reroute_to(edited_story, pop_story(), edit, False)
 
 
 @app.route('/create_new_story')
@@ -199,25 +195,20 @@ def add_new_story():
     text = request.form['text']
     story, edit = db.add_story(storyname, get_user(), text)
 
-    session[STORY_KEY] = story
-    session[EDIT_KEY] = edit
-    session[IS_NEW_STORY_KEY] = True
-    return reroute_to(edited_story)
+    return reroute_to(edited_story, story, edit, True)
 
 
 @app.route('/edited_story', methods=['get', 'post'])
 @logged_in
 @preconditions(home, post_only, session_contains(STORY_KEY, EDIT_KEY))
-def edited_story():
-    # type: () -> Response
-    """
-    Display post-edit or post-creation page,
-    with Story, Edit, and is_new_story passed through session.
-    """
+@bind_args
+def edited_story(story, edit, is_new_story):
+    # type: (Story, Edit, bool) -> Response
+    """Display post-edit or post-creation page for given Story, Edit, and is_new_story."""
     return render_template('edited_story.jinja2',
-                           story=pop_story(),
-                           edit=pop_edit(),
-                           new_story=pop_is_new_story())
+                           story=story,
+                           edit=edit,
+                           is_new_story=is_new_story)
 
 
 if __name__ == '__main__':

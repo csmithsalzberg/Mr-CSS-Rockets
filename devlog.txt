@@ -76,3 +76,6 @@ Fixed a few bugs and rearranged some flask routes that whose design changed.
 senK -- 2017-10-25 15:00:26
 Modified read_or_edit_story route to use only storyname from form instead of also requiring story_id, which reflects our changes in home.jinja2.
 
+senK -- 2017-10-25 15:08:18
+Used @bind_args in edited_story reroute to pass args through parameters (really through session but hidden), because it's intent it clearer and it's simpler to user.
+
