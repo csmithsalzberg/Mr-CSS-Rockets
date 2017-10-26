@@ -22,23 +22,31 @@ def reroute_to(route_func, *args, **kwargs):
     :param route_func: the route function to redirect to
     :return: the Response from redirect(url_for(route.func_name))
     """
-    session.args = args
-    session.kwargs = kwargs
+    if args or kwargs:
+        session.args = args
+        session.kwargs = kwargs
     return redirect(url_for(route_func.func_name))
 
 
-def bind_args(route_func):
+def bind_args(backup_route):
     # type: (callable) -> callable
     """
     Wrap a route that calls the original route
     with args and kwargs passed through the session.
+
+    backup_route is the route rerouted to
+    if the session doesn't contain args or kwargs.
     """
 
-    def delegating_route():
-        d = session.__dict__  # type: dict[str, any]
-        return route_func(*d.pop('args', ()), **d.pop('kwargs', {}))
+    def binder(route_func):
+        @preconditions(backup_route, session_contains('args', 'kwargs'))
+        def delegating_route():
+            d = session.__dict__  # type: dict[str, any]
+            return route_func(*d.pop('args'), **d.pop('kwargs'))
 
-    return delegating_route()
+        return delegating_route()
+
+    return binder
 
 
 @extend(Flask)

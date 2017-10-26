@@ -215,8 +215,8 @@ def add_new_story():
 
 @app.route('/edited_story', methods=['get', 'post'])
 @logged_in
-@preconditions(home, post_only, session_contains(STORY_KEY, EDIT_KEY))
-@bind_args
+@preconditions(home, post_only)
+@bind_args(home)
 def edited_story(story, edit, is_new_story):
     # type: (Story, Edit, bool) -> Response
     """Display post-edit or post-creation page for given Story, Edit, and is_new_story."""
