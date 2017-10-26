@@ -139,6 +139,7 @@ def home():
                            unedited_stories=sorted(db.get_unedited_stories(user)))
 
 
+
 @app.route('/story', methods=['get', 'post'])
 @logged_in
 @preconditions(home, post_only, form_contains('story'))
@@ -236,6 +237,9 @@ def edited_story(story, edit, is_new_story):
                            edit=edit,
                            is_new_story=is_new_story)
 
+@app.route('/logout')
+def logout():
+    session.pop(USER_KEY)
 
 if __name__ == '__main__':
     app.debug = True
