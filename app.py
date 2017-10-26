@@ -3,22 +3,6 @@ from __future__ import print_function
 __authors__ = ['Khyber Sen', 'Caleb Smith-Salzburg', 'Michael Ruvinshteyn', 'Terry Guan']
 __date__ = '2017-10-30'
 
-import pip
-
-try:
-    import passlib
-except:
-    try:
-        pip.main(["install", "passlib"])
-    except SystemExit as e:
-        print("passlib dependency not installed properly...proceeding on")
-try:
-    x = 2  # import python-dateutil
-except:
-    try:
-        pip.main(["install", "python-dateutil"])
-    except SystemExit as e:
-        print("python-dateutil dependency not installed properly... proceeding on")
 import os
 
 from flask import Flask

@@ -94,3 +94,8 @@ Added login page that facilitates logging in and creating an account -- uses two
 senK -- 2017-10-26 17:06:11
 Fixed a bug in dict_contains() precondition.
 
+senK -- 2017-10-26 17:26:20
+Switched try: import; except: pip install in app.py to
+    having a requirements.txt file that can install dependencies
+    by running 'pip install -r requirements.txt'.
+

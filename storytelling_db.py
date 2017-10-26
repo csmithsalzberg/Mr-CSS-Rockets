@@ -2,31 +2,12 @@ from __future__ import print_function
 
 from collections import namedtuple
 from datetime import datetime
-#from typing import Generator, Tuple
+
+import dateutil.parser
+from passlib.hash import pbkdf2_sha256
+from typing import Generator, Tuple
+
 from util.db import Database
-
-import pip 
-try:
-    import dateutil.parser 
-except:
-    try:
-        pip.main(["install", "python-dateutil"])
-        import dateutil.parser
-        #print "successfully installed and imported dateutil.parser"
-    except SystemExit as e:
-        pass
-       # print "python-dateutil dependency not installed properly... proceeding on"
-try:
-    from passlib.hash import pbkdf2_sha256
-except:
-    try:
-        pip.main(["install", "passlib"])
-        from passlib.hash import pbkdf2_sha256
-       # print "successfully installed and imported passlib.hash"
-    except SystemExit as e:
-        pass
-#        print "passlib dependency not installed properly... proceeding on"
-
 
 DB_SCHEMA = dict(
     users='''
