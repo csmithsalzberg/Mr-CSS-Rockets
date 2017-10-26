@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 {% extends "base_logged.jinja2" %}
 
+{% block body %}
+
 <h2>Edited Stories:</h2><br>
 <form action="/story" method="post">
 {% for E in edited_stories %}
@@ -14,3 +16,5 @@
 <button name = "story" value = "{{U.storyname}}">{{s.storyname}}</button>{{br(2)}}
 {% endfor %}
 </form>
+
+{% endblock body %}
