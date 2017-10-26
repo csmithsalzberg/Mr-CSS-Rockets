@@ -89,4 +89,4 @@ smith-salzbergC -- 2017-10-25 23:15:26
 Updated README.md to meet specifications for launch instructions as set on the hw server.
 
 ruvinshteynM -- 2017-10-26
-Added login page and signup page, minimal version of login completed
+Added login page that facilitates logging in and creating an account -- uses two forms
