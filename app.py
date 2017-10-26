@@ -6,14 +6,18 @@ __date__ = '2017-10-20'
 import pip
 try:
     import passlib
-    import python-dateutil
 except:
     try:
         pip.main(["install", "passlib"])
+    except SystemExit as e:
+        print "passlib dependency not installed properly... proceeding on"
+try:
+    import python-dateutil
+except:
+    try:
         pip.main(["install", "python-dateutil"])
     except SystemExit as e:
-        print "not all dependencies were necessarily installed... proceeding on"
-
+        print "python-dateutil dependency not installed properly... proceeding on"
 import os
 
 from flask import Flask
