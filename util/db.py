@@ -1,5 +1,5 @@
 import sqlite3
-from collections import Iterable
+import threading
 
 
 class Database(object):
@@ -8,8 +8,10 @@ class Database(object):
     def __init__(self, path, debug=False):
         # type: (str) -> None
         self.path = path
-        self.conn = sqlite3.connect(path)
+        self.conn = sqlite3.connect(path, check_same_thread=False)
+        # mulithreading is only safe when Database.lock() is used
         self.cursor = self.conn.cursor()
+        self._lock = threading.RLock()
         self.debug = debug
 
     @staticmethod
@@ -43,10 +45,23 @@ class Database(object):
         self.commit()
         self.hard_close()
 
+    def lock(self):
+        # type: () -> None
+        self._lock.acquire()
+
+    def release_lock(self):
+        # type: () -> None
+        self._lock.release()
+
     def __enter__(self):
         # type: () -> Database
+        self.lock()
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         # type: () -> None
-        self.close()
+        self.release_lock()
+
+    def reset_connection(self):
+        self.conn = sqlite3.connect(self.path)
+        self.cursor = self.conn.cursor()

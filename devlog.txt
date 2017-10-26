@@ -99,3 +99,19 @@ Switched try: import; except: pip install in app.py to
     having a requirements.txt file that can install dependencies
     by running 'pip install -r requirements.txt'.
 
+senK -- 2017-10-26 18:18:25
+Fixed illegal multithreaded access to sqlite connection:
+    Used check_same_thread=False in sqlite3.connect()
+        so that multithreaded access is allowed.
+    However, this is not safe, because multithreaded access can cause races
+        that will crash Python.
+    To avoid this, I added a reentrant lock to the Database.
+        If the with statement is used, like `with unsafe_db as db:`,
+        then everything inside the with statement is safe
+        because the lock is acquired and only that thread can access it.
+        When the with statement is exited, normally or with a return or with an exception,
+        the lock is released.
+        So when using the db object (Database or StoryTellingDatabase) inside a flask route,
+        you must use a with statement to access it safely.
+    I modified all the routes to use the db safely this way.
+

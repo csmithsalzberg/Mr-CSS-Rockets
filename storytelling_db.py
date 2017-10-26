@@ -99,15 +99,26 @@ class StoryTellingDatabase(object):
         """Close and commit DB."""
         self.db.close()
 
+    def lock(self):
+        # type: () -> None
+        """Acquire reentrant lock. By locking, multithreaded to DB is safe."""
+        self.db.lock()
+
+    def release_lock(self):
+        # type: () -> None
+        """Release reentrant lock."""
+        self.db.release_lock()
+
     def __enter__(self):
         # type: () -> StoryTellingDatabase
-        """Do nothing when entering with statement."""
+        """Enter DB (lock) when entering with statement."""
+        self.db.__enter__()
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         # type: () -> None
-        """Close DB after with statement."""
-        self.close()
+        """Exit DB (release lock) after with statement."""
+        self.db.__exit__(exc_type, exc_value, traceback)
 
     def _create_tables(self):
         # type: () -> None
@@ -122,6 +133,9 @@ class StoryTellingDatabase(object):
             ''.join('DROP TABLE {};'.format(table) for table in DB_SCHEMA))
         self._create_tables()
         self.commit()
+
+    def reset_connection(self):
+        self.db.reset_connection()
 
     def get_user(self, username, password):
         # type: (unicode, unicode) -> User | None
@@ -183,8 +197,8 @@ class StoryTellingDatabase(object):
         # type: (User, bool) -> Generator[Story, None, None]
         cmp = '=' if edited else '!='
         for story_id, storyname in self.db.cursor.execute(
-                'SELECT stories.id, storyname FROM edits, stories, users WHERE users.id {} ?'
-                        .format(cmp),
+                'SELECT stories.id, storyname FROM edits, stories, users '
+                'WHERE users.id {} ?'.format(cmp),
                 [user.id]):
             yield Story(story_id, storyname)
 

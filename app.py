@@ -31,7 +31,7 @@ from storytelling_db import StoryTellingException
 
 app = Flask(__name__)
 
-db = StoryTellingDatabase()
+unsafe_db = StoryTellingDatabase()
 
 """Keys in session."""
 USER_KEY = 'user'
@@ -110,16 +110,14 @@ def auth():
     Authorize and login a User with username and password from POST form.
     If username and password is wrong, flash message raised by db.
     """
-    print('request:', request)
-
     username, password = get_user_info()
-    # print(username, password)
 
-    try:
-        user = db.get_user(username, password)
-    except StoryTellingException as e:
-        flash(e.message)
-        return reroute_to(login)
+    with unsafe_db as db:
+        try:
+            user = db.get_user(username, password)
+        except StoryTellingException as e:
+            flash(e.message)
+            return reroute_to(login)
 
     session[USER_KEY] = user
     return reroute_to(home)
@@ -131,9 +129,10 @@ def home():
     # type: () -> Response
     """Display a User's home page with all of his edited and unedited Stories."""
     user = get_user()
-    return render_template('home.jinja2',
-                           edited_stories=sorted(db.get_edited_stories(user)),
-                           unedited_stories=sorted(db.get_unedited_stories(user)))
+    with unsafe_db as db:
+        return render_template('home.jinja2',
+                               edited_stories=sorted(db.get_edited_stories(user)),
+                               unedited_stories=sorted(db.get_unedited_stories(user)))
 
 
 @app.route('/story', methods=['get', 'post'])
@@ -149,19 +148,23 @@ def read_or_edit_story():
     reroute to home.
     """
     storyname = request.form(['story'])
-    try:
-        story = db.get_story(storyname)
-    except StoryTellingException as e:
-        flash(e.message)
-        return reroute_to(home)
 
-    session[STORY_KEY] = story
-    edits = db.get_edits(story)
-    editing = db.can_edit(story, get_user())
-    if editing:
-        return render_template('edit_story.jinja2', last_edit=max(edits, key=Edit.order))
-    else:
-        return render_template('read_story.jinja2', edits=sorted(edits, key=Edit.order))
+    with unsafe_db as db:
+        try:
+            story = db.get_story(storyname)
+        except StoryTellingException as e:
+            flash(e.message)
+            return reroute_to(home)
+
+        session[STORY_KEY] = story
+        edits = db.get_edits(story)
+        editing = db.can_edit(story, get_user())
+        if editing:
+            return render_template('edit_story.jinja2',
+                                   last_edit=max(edits, key=Edit.order))
+        else:
+            return render_template('read_story.jinja2',
+                                   edits=sorted(edits, key=Edit.order))
 
 
 @app.route('/edit', methods=['get', 'post'])
@@ -180,11 +183,13 @@ def edit_story():
     story = get_story()
     user = get_user()
 
-    if not db.can_edit(story, user):
-        return reroute_to(home)
+    with unsafe_db as db:
+        if not db.can_edit(story, user):
+            return reroute_to(home)
 
     text = request.form['text']
-    edit = db.edit_story(story, user, text)
+    with unsafe_db as db:
+        edit = db.edit_story(story, user, text)
     return reroute_to(edited_story, pop_story(), edit, False)
 
 
@@ -211,12 +216,14 @@ def add_new_story():
 
     storyname = request.form['storyname']
 
-    if db.story_exists(storyname):
-        flash('The story "{}" already exists'.format(storyname))
-        return reroute_to(create_new_story)
+    with unsafe_db as db:
+        if db.story_exists(storyname):
+            flash('The story "{}" already exists'.format(storyname))
+            return reroute_to(create_new_story)
 
     text = request.form['text']
-    story, edit = db.add_story(storyname, get_user(), text)
+    with unsafe_db as db:
+        story, edit = db.add_story(storyname, get_user(), text)
 
     return reroute_to(edited_story, story, edit, True)
 
