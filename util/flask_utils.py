@@ -44,7 +44,7 @@ def bind_args(backup_route):
             d = session.__dict__  # type: dict[str, any]
             return route_func(*d.pop('args'), **d.pop('kwargs'))
 
-        return delegating_route()
+        return delegating_route
 
     return binder
 

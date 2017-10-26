@@ -11,8 +11,12 @@ def _filter_hidden(dictionary):
     return {k: v for k, v in dictionary.viewitems() if not k.startswith('_')}
 
 
+def _filter_hidden_obj(obj):
+    return _filter_hidden({field: getattr(obj, field) for field in dir(obj)})
+
+
 # add non-hidden builtins
-context.update(_filter_hidden(__builtins__.__dict__))
+context.update(_filter_hidden_obj(__builtins__))
 
 
 def splat():
@@ -53,10 +57,10 @@ def br(n):
 context = _filter_hidden(context)
 
 
-def add_template_context(app):
+def add_to(app):
     # type: (Flask) -> None
-    for var in context.viewvalues():
-        app.add_template_global(var)
+    for name, value in context.viewitems():
+        app.add_template_global(value, name)
 
 
 if __name__ == '__main__':

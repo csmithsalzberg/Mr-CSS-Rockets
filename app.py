@@ -21,7 +21,7 @@ from util.flask_utils import form_contains
 from util.flask_utils import session_contains
 from util.flask_utils import bind_args
 
-from util.template_context import add_template_context
+import util.template_context
 
 from storytelling_db import StoryTellingDatabase
 from storytelling_db import User
@@ -229,5 +229,5 @@ def edited_story(story, edit, is_new_story):
 if __name__ == '__main__':
     app.debug = True
     app.secret_key = os.urandom(32)
-    add_template_context(app)
+    util.template_context.add_to(app)
     app.run()
