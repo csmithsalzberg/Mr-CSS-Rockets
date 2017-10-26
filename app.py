@@ -10,14 +10,14 @@ except:
     try:
         pip.main(["install", "passlib"])
     except SystemExit as e:
-        print "passlib dependency not installed properly... proceeding on"
+        print ("passlib dependency not installed properly...proceeding on")
 try:
-    import python-dateutil
+    x=2#import python-dateutil
 except:
     try:
         pip.main(["install", "python-dateutil"])
     except SystemExit as e:
-        print "python-dateutil dependency not installed properly... proceeding on"
+        print ("python-dateutil dependency not installed properly... proceeding on")
 import os
 
 from flask import Flask
