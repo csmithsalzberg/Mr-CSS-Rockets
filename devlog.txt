@@ -67,6 +67,9 @@ Added comments for almost all public functions and methods.
 ruvinshteynM -- 2017-10-24 13:19:04
 Created minimal versions of base.jinja2 and base_logged.jinja2; started minimal version of home.jinja2
 
+ruvinshteynM -- 2017-10-25 13:18:35
+Added story display to home page, minimal version of homepage completed
+
 senK -- 2017-10-25 14:19:59
 Added JS for automatic and simpler form submission in homepage links.  Probably won't be used, but I'm adding it anyways in case since I already wrote it.
 
@@ -84,3 +87,6 @@ Edited the README with dependencies, install instructions. Added to app.py auto 
 
 smith-salzbergC -- 2017-10-25 23:15:26
 Updated README.md to meet specifications for launch instructions as set on the hw server.
+
+ruvinshteynM -- 2017-10-26
+Added login page and signup page, minimal version of login completed
