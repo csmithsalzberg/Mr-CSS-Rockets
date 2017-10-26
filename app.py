@@ -1,23 +1,24 @@
 from __future__ import print_function
 
 __authors__ = ['Khyber Sen', 'Caleb Smith-Salzburg', 'Michael Ruvinshteyn', 'Terry Guan']
-__date__ = '2017-10-20'
+__date__ = '2017-10-30'
 
 import pip
+
 try:
     import passlib
 except:
     try:
         pip.main(["install", "passlib"])
     except SystemExit as e:
-        print ("passlib dependency not installed properly...proceeding on")
+        print("passlib dependency not installed properly...proceeding on")
 try:
-    x=2#import python-dateutil
+    x = 2  # import python-dateutil
 except:
     try:
         pip.main(["install", "python-dateutil"])
     except SystemExit as e:
-        print ("python-dateutil dependency not installed properly... proceeding on")
+        print("python-dateutil dependency not installed properly... proceeding on")
 import os
 
 from flask import Flask
@@ -36,7 +37,7 @@ from util.flask_utils import form_contains
 from util.flask_utils import session_contains
 from util.flask_utils import bind_args
 
-import util.template_context
+from util.template_context import add_template_context
 
 from storytelling_db import StoryTellingDatabase
 from storytelling_db import User
@@ -107,9 +108,11 @@ def login():
     # type: () -> Response
     return render_template('login.jinja2')
 
-#@app.route('/signup'):
-#def signup():
-#    return render_template('singup.jinja')
+
+# @app.route('/signup'):
+# def signup():
+#     # type: () -> Response
+#    return render_template('signup.jinja')
 
 """Precondition decorator rerouting to login if is_logged_in isn't True."""
 logged_in = preconditions(login, is_logged_in)
@@ -123,7 +126,10 @@ def auth():
     Authorize and login a User with username and password from POST form.
     If username and password is wrong, flash message raised by db.
     """
+    print('request:', request)
+
     username, password = get_user_info()
+    # print(username, password)
 
     try:
         user = db.get_user(username, password)
@@ -144,7 +150,6 @@ def home():
     return render_template('home.jinja2',
                            edited_stories=sorted(db.get_edited_stories(user)),
                            unedited_stories=sorted(db.get_unedited_stories(user)))
-
 
 
 @app.route('/story', methods=['get', 'post'])
@@ -244,12 +249,16 @@ def edited_story(story, edit, is_new_story):
                            edit=edit,
                            is_new_story=is_new_story)
 
+
 @app.route('/logout')
 def logout():
-    session.pop(USER_KEY)
+    # type: () -> Response
+    del session[USER_KEY]
+    return reroute_to(welcome)
+
 
 if __name__ == '__main__':
     app.debug = True
     app.secret_key = os.urandom(32)
-    util.template_context.add_to(app)
+    add_template_context(app)
     app.run()

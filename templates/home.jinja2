@@ -3,18 +3,25 @@
 
 {% block body %}
 
-<h2>Edited Stories:</h2><br>
-<form action="/story" method="post">
-{% for E in edited_stories %}
-<button name = "story" value = "{{E.storyname}}">{{s.storyname}}</button>{{br(2)}}
-{% endfor %}
+    <h2>Edited Stories:</h2><br>
+    <!--suppress HtmlUnknownTarget -->
+    <form action="/story" method="post">
+        {% for story in edited_stories %}
+            <button name="story" value="{{ story.storyname }}">
+                {{ s.storyname }}
+            </button>
+            {{ br(2) }}
+        {% endfor %}
 
-{{br(4)}}
+        {{ br(4) }}
 
-<h2>Unedited Stories:</h2><br>
-{% for U in unedited_stories %}
-<button name = "story" value = "{{U.storyname}}">{{s.storyname}}</button>{{br(2)}}
-{% endfor %}
-</form>
+        <h2>Unedited Stories:</h2><br>
+        {% for story in unedited_stories %}
+            <button name="story" value="{{ story.storyname }}">
+                {{ s.storyname }}
+            </button>
+            {{ br(2) }}
+        {% endfor %}
+    </form>
 
 {% endblock body %}

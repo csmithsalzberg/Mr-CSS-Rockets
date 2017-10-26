@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import sys
 
 from flask import Flask
@@ -56,8 +58,10 @@ def br(n):
 # remove hiddens
 context = _filter_hidden(context)
 
+context['print'] = print
 
-def add_to(app):
+
+def add_template_context(app):
     # type: (Flask) -> None
     for name, value in context.viewitems():
         app.add_template_global(value, name)

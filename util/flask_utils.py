@@ -8,10 +8,12 @@ from flask import redirect
 from flask import request
 from flask import session
 from flask import url_for
-# noinspection PyUnresolvedReferences
-# from typing import KeysView
 
 from oop import extend
+
+
+# noinspection PyUnresolvedReferences
+# from typing import KeysView
 
 
 def reroute_to(route_func, *args, **kwargs):
@@ -136,7 +138,7 @@ def preconditions(backup_route, *precondition_funcs):
     return decorator
 
 
-preconditions.debug = False
+preconditions.debug = True
 
 
 def method_is(http_method):
@@ -152,6 +154,7 @@ def method_is(http_method):
 
 
 post_only = method_is('post')
+post_only.debug = True
 
 
 def methods_are(*http_methods):
@@ -179,15 +182,20 @@ def set_contains(set_, *values):
     return precondition
 
 
-def dict_contains(dictionary, *keys):
-    # type: (dict[T, any] | KeyViewFuture, list[T]) -> callable
+def dict_contains(dictionary, keys, calling_func=None):
+    # type: (dict[T, any] | KeyViewFuture, list[T], callable | None) -> callable
     """Assert a dict contains all the given keys."""
     keys = set(keys)
 
     def precondition():
         # type: () -> bool
         # check if set contains all values (using subset)
-        return keys <= dictionary.viewkeys()
+        return keys <= set(dictionary.viewkeys())
+
+    precondition.debug = True
+
+    if calling_func is not None:
+        precondition.func_name = calling_func.func_name + repr(tuple(keys))
 
     return precondition
 
@@ -203,16 +211,16 @@ class KeyViewFuture(object):
 def form_contains(*fields):
     # type: (list[str]) -> callable
     """Assert request.form contains all the given fields."""
-    return dict_contains(KeyViewFuture(lambda: request.form), *fields)
+    return dict_contains(KeyViewFuture(lambda: request.form), fields, form_contains)
 
 
 def session_contains(*keys):
     # type: (list[any]) -> callable
     """Assert session contains all the given keys."""
-    return dict_contains(session, *keys)
+    return dict_contains(session, keys, session_contains)
 
 
 def has_attrs(obj, *attrs):
     # type: (any, list[str]) -> callable
     """Assert an object contains all the given fields/attributes."""
-    return dict_contains(obj.__dict__, *attrs)
+    return dict_contains(obj.__dict__, attrs, has_attrs)

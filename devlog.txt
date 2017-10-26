@@ -90,3 +90,7 @@ Updated README.md to meet specifications for launch instructions as set on the h
 
 ruvinshteynM -- 2017-10-26 13:12:24
 Added login page that facilitates logging in and creating an account -- uses two forms
+
+senK -- 2017-10-26 17:06:11
+Fixed a bug in dict_contains() precondition.
+

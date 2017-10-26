@@ -3,17 +3,26 @@
 {% extends "base.jinja2" %}
 
 {% block body %}
-Login here:{{br(2)}}
-<form action="/auth" method="post">
-Username: <input type="text" name="username" required>{{br(2)}}
-Password: <input type="password" name="password" required>{{br(2)}}
-<input type="submit" value="Submit">{{br(5)}}
-</form>
 
-Don't have an account? Sign up here:{{br(2)}}
-<form action="/signup">
-Username: <input type="text" name="username" required>{{br(2)}}
-Password: <input type="password" name="password" required>{{br(2)}}
-<input type="submit">
-</form>
+    {% with messages = get_flashed_messages() %}
+        {{ print(messages) }}
+        {% for message in messages %}
+            <h3>{{ message }}</h3>
+        {% endfor %}
+    {% endwith %}
+
+    Login here:{{ br(2) }}
+    <!--suppress HtmlUnknownTarget -->
+    <form action="/auth" method="post">
+        Username: <input type="text" name="username" required>{{ br(2) }}
+        Password: <input type="password" name="password" required>{{ br(2) }}
+        <input type="submit" value="Submit">{{ br(5) }}
+    </form>
+
+    Don't have an account? Sign up here:{{ br(2) }}
+    <form action="/signup">
+        Username: <input type="text" name="username" required>{{ br(2) }}
+        Password: <input type="password" name="password" required>{{ br(2) }}
+        <input type="submit">
+    </form>
 {% endblock body %}
