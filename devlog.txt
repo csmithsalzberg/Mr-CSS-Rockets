@@ -79,3 +79,5 @@ Modified read_or_edit_story route to use only storyname from form instead of als
 senK -- 2017-10-25 15:08:18
 Used @bind_args in edited_story reroute to pass args through parameters (really through session but hidden), because it's intent it clearer and it's simpler to user.
 
+smith-salzbergC -- 2017-10-25 23:15:26
+Updated README.md to meet specifications for launch instructions as set on the hw server.
