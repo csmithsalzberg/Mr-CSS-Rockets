@@ -27,3 +27,5 @@ We are developing a site where users can update, create, and view stories. The c
       `python app.py`
 
        Any dependencies that are missing will be automatically installed!
+ 
+ 4. Navigate to [localhost:5000](localhost:5000) and follow displayed prompts!
