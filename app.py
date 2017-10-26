@@ -107,6 +107,9 @@ def login():
     # type: () -> Response
     return render_template('login.jinja2')
 
+#@app.route('/signup'):
+#def signup():
+#    return render_template('singup.jinja')
 
 """Precondition decorator rerouting to login if is_logged_in isn't True."""
 logged_in = preconditions(login, is_logged_in)
