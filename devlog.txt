@@ -81,3 +81,6 @@ Used @bind_args in edited_story reroute to pass args through parameters (really 
 
 guanT -- 2017-10-25 23:17:51
 Edited the README with dependencies, install instructions
+
+smith-salzbergC -- 2017-10-25 23:15:26
+Updated README.md to meet specifications for launch instructions as set on the hw server.

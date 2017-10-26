@@ -10,9 +10,21 @@ We are developing a site where users can update, create, and view stories. The c
   * passlib
   * python-dateutil
   * typing
+  * virtualenv
 
-### How to use our project
- 1. Clone this repo using SSH or HTTPS: `git clone git@github.com:csmithsalzberg/Mr-CSS-Rockets.git`
-    `git clone https://github.com/csmithsalzberg/Mr-CSS-Rockets.git`
+### Launch Instructions
+ 1. Clone this repo using SSH:
+ 
+     `git clone git@github.com:csmithsalzberg/Mr-CSS-Rockets.git`
+ 
+      or HTTPS: 
+ 
+      `git clone https://github.com/csmithsalzberg/Mr-CSS-Rockets.git`
+ 
  2. For the safety of your computer, run a python virtual environment. It's just the right thing to do.
- 3. Once you have a virtualenv running, run app.py as such: `python app.py`. Any dependencies that are missing will be automatically installed
+ 
+ 3. Once you have a virtualenv running, run app.py: 
+ 
+      `python app.py` 
+ 
+       Any dependencies that are missing will be automatically installed!
