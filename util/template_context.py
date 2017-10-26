@@ -1,5 +1,7 @@
 import sys
 
+from flask import Flask
+
 context = sys.modules[__name__].__dict__  # type: dict[str, any]
 
 
@@ -49,6 +51,13 @@ def br(n):
 
 # remove hiddens
 context = _filter_hidden(context)
+
+
+def add_template_context(app):
+    # type: (Flask) -> None
+    for var in context.viewvalues():
+        app.add_template_global(var)
+
 
 if __name__ == '__main__':
     from pprint import pprint

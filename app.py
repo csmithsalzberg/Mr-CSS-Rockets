@@ -5,14 +5,33 @@ __date__ = '2017-10-20'
 
 import os
 
-from flask import Flask, render_template, request, flash, session
+from flask import Flask
+from flask import render_template
+from flask import request
+from flask import flash
+from flask import session
 from flask import Response
+
 from werkzeug.datastructures import ImmutableMultiDict
 
-from util.flask_utils import preconditions, post_only, reroute_to, form_contains, session_contains, \
-    bind_args
+from util.flask_utils import preconditions
+from util.flask_utils import post_only
+from util.flask_utils import reroute_to
+from util.flask_utils import form_contains
+from util.flask_utils import session_contains
+from util.flask_utils import bind_args
 
-from storytelling_db import StoryTellingDatabase, User, Story, Edit, StoryTellingException
+from util.template_context import add_template_context
+
+from storytelling_db import StoryTellingDatabase
+from storytelling_db import User
+from storytelling_db import Story
+from storytelling_db import Edit
+from storytelling_db import StoryTellingException
+
+app = Flask(__name__)
+
+db = StoryTellingDatabase()
 
 """Keys in session."""
 USER_KEY = 'user'
@@ -50,10 +69,6 @@ def pop_edit():
     """Pop Edit from session."""
     return session.pop(EDIT_KEY)
 
-
-app = Flask(__name__)
-
-db = StoryTellingDatabase()
 
 is_logged_in = session_contains(USER_KEY)
 
@@ -109,8 +124,8 @@ def home():
     """Display a User's home page with all of his edited and unedited Stories."""
     user = get_user()
     return render_template('home.jinja2',
-                           edited_stories=db.get_edited_stories(user),
-                           unedited_stories=db.get_unedited_stories(user))
+                           edited_stories=sorted(db.get_edited_stories(user)),
+                           unedited_stories=sorted(db.get_unedited_stories(user)))
 
 
 @app.route('/story', methods=['get', 'post'])
@@ -214,4 +229,5 @@ def edited_story(story, edit, is_new_story):
 if __name__ == '__main__':
     app.debug = True
     app.secret_key = os.urandom(32)
+    add_template_context(app)
     app.run()
