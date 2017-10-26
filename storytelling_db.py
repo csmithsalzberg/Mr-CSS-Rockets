@@ -2,6 +2,8 @@ from __future__ import print_function
 
 from collections import namedtuple
 from datetime import datetime
+#from typing import Generator, Tuple
+from util.db import Database
 
 import pip 
 try:
@@ -9,21 +11,22 @@ try:
 except:
     try:
         pip.main(["install", "python-dateutil"])
-        import dateutil.parser 
+        import dateutil.parser
+        #print "successfully installed and imported dateutil.parser"
     except SystemExit as e:
-        print "python-dateutil dependency not installed properly... proceeding on"
+        pass
+       # print "python-dateutil dependency not installed properly... proceeding on"
 try:
-    from import passlib.hash import pbkdf2_sha256
+    from passlib.hash import pbkdf2_sha256
 except:
     try:
         pip.main(["install", "passlib"])
-        from import passlib.hash import pbkdf2_sha256
+        from passlib.hash import pbkdf2_sha256
+       # print "successfully installed and imported passlib.hash"
     except SystemExit as e:
-        print "passlib dependency not installed properly... proceeding on"
+        pass
+#        print "passlib dependency not installed properly... proceeding on"
 
-from typing import Generator, Tuple
-
-from util.db import Database
 
 DB_SCHEMA = dict(
     users='''
