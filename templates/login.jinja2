@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+
+{% extends "base.jinja2"}
+
+<form action="/auth" method="post">
+Username: <input type="text" name="username">{{br(2)}}
+Password: <input type="password" name="password">{{br(2)}}
+<input type="submit" value="Submit">{{br(5)}}
+</form>
+
+Don't have an account? Sign up <a href="/signup" target="_blank">here</a>
