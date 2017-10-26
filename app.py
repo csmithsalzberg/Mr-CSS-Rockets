@@ -3,6 +3,17 @@ from __future__ import print_function
 __authors__ = ['Khyber Sen', 'Caleb Smith-Salzburg', 'Michael Ruvinshteyn', 'Terry Guan']
 __date__ = '2017-10-20'
 
+import pip
+try:
+    import passlib
+    import python-dateutil
+except:
+    try:
+        pip.main(["install", "passlib"])
+        pip.main(["install", "python-dateutil"])
+    except SystemExit as e:
+        print "not all dependencies were necessarily installed... proceeding on"
+
 import os
 
 from flask import Flask
