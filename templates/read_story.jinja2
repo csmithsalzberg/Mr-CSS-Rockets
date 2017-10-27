@@ -3,7 +3,7 @@
 {% extends "base_logged.jinja2" %}
 
 {% block body %}
-	<b>{{edits[0].story.storyname}}:<b>
+	<b>{{edits[0].story.storyname}}:</b>
 	{% for edit in edits %}
 	<p>{{edit.text}}<p>
 	{% endfor %}
