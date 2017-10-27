@@ -1,6 +1,5 @@
 from __future__ import print_function
 
-from util.namedtuple_factory import namedtuple
 from datetime import datetime
 
 import dateutil.parser
@@ -8,6 +7,7 @@ from passlib.hash import pbkdf2_sha256
 from typing import Generator, Tuple
 
 from util.db import Database
+from util.namedtuple_factory import namedtuple
 
 DB_SCHEMA = dict(
     users='''
@@ -196,10 +196,12 @@ class StoryTellingDatabase(object):
     def _get_stories(self, user, edited):
         # type: (User, bool) -> Generator[Story, None, None]
         cmp = '=' if edited else '!='
-        print('user:', user)
         for story_id, storyname in self.db.cursor.execute(
                 'SELECT stories.id, storyname FROM edits, stories, users '
-                'WHERE users.id {} ?'.format(cmp),
+                'WHERE user_id = users.id '
+                'AND story_id = stories.id '
+                'AND users.id = stories.id '
+                'AND users.id {} ?'.format(cmp),
                 [user.id]):
             yield Story(story_id, storyname)
 
@@ -219,8 +221,10 @@ class StoryTellingDatabase(object):
         for user_id, username, text, time in self.db.cursor.execute(
                 'SELECT users.id, username, text, time '
                 'FROM edits, users, stories '
-                'WHERE stories.id = ?'
-                'AND users.id = stories.id',
+                'WHERE user_id = users.id '
+                'AND story_id = stories.id '
+                'AND users.id = stories.id '
+                'AND stories.id = ?',
                 [story.id]):
             time = dateutil.parser.parse(time)
             yield Edit(Story(story.id, story.storyname), User(user_id, username), text, time)

@@ -129,3 +129,8 @@ Fixed (de)serialization of namedtuples in sessions,
     This is done by overriding flask.sessions._tag to serialize namedtuples specially,
         and extending flask.JSONDecoder with an object hook to deserialize namedtuples.
 
+senK -- 2017-10-26 22:45:53
+Fixed bug in StoryTellingDatabase._get_stories() that returned too many stories
+    because the edits.user_id wasn't mapped to users.id
+    and edits.story_id wasn't mapped to stories.id.
+

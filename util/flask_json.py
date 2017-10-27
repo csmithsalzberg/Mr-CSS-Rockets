@@ -51,15 +51,12 @@ class NamedTupleJsonDecoder(JSONDecoder):
 
     @staticmethod
     def object_hook(obj):
-        print('object_hook:', obj)
         if '_type' not in obj:
             return obj
-        o_type = obj.pop('_type')
-        return all_namedtuples[o_type](**obj)
+        return all_namedtuples[obj.pop('_type')](**obj)
 
 
 def use_named_tuple_json(app):
     # type: (Flask) -> None
     app.json_encoder = NamedTupleJsonEncoder
     app.json_decoder = NamedTupleJsonDecoder
-    pass
