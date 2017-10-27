@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+
+{% extends base_logged %}
+
+{% block body %}
+	{{edit.story.storyname}}:
+	{% for edit in edits %}
+	<p>{{edit.text}}<p>
+	{% endfor %}
+{% endblock body %}
