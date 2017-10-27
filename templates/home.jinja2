@@ -3,6 +3,12 @@
 
 {% block body %}
 
+    {% with messages = get_flashed_messages() %}
+        {% for message in messages %}
+            <h3>{{ message }}</h3>
+        {% endfor %}
+    {% endwith %}
+
     <h2>Edited Stories:</h2><br>
     <!--suppress HtmlUnknownTarget -->
     <form action="/story" method="post">
