@@ -8,7 +8,7 @@
     <form action="/story" method="post">
         {% for story in edited_stories %}
             <button name="story" value="{{ story.storyname }}">
-                {{ s.storyname }}
+                {{ story.storyname }}
             </button>
             {{ br(2) }}
         {% endfor %}
@@ -18,7 +18,7 @@
         <h2>Unedited Stories:</h2><br>
         {% for story in unedited_stories %}
             <button name="story" value="{{ story.storyname }}">
-                {{ s.storyname }}
+                {{ story.storyname }}
             </button>
             {{ br(2) }}
         {% endfor %}

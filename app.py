@@ -22,6 +22,7 @@ from util.flask_utils import session_contains
 from util.flask_utils import bind_args
 
 from util.template_context import add_template_context
+from util.flask_json import use_named_tuple_json
 
 from storytelling_db import StoryTellingDatabase
 from storytelling_db import User
@@ -31,7 +32,7 @@ from storytelling_db import StoryTellingException
 
 app = Flask(__name__)
 
-unsafe_db = StoryTellingDatabase()
+db = StoryTellingDatabase()
 
 """Keys in session."""
 USER_KEY = 'user'
@@ -112,7 +113,7 @@ def auth():
     """
     username, password = get_user_info()
 
-    with unsafe_db as db:
+    with db:
         try:
             user = db.get_user(username, password)
         except StoryTellingException as e:
@@ -129,7 +130,7 @@ def home():
     # type: () -> Response
     """Display a User's home page with all of his edited and unedited Stories."""
     user = get_user()
-    with unsafe_db as db:
+    with db:
         return render_template('home.jinja2',
                                edited_stories=sorted(db.get_edited_stories(user)),
                                unedited_stories=sorted(db.get_unedited_stories(user)))
@@ -147,9 +148,9 @@ def read_or_edit_story():
     If the story_id, storyname pair cannot be verified,
     reroute to home.
     """
-    storyname = request.form(['story'])
+    storyname = request.form['story']
 
-    with unsafe_db as db:
+    with db:
         try:
             story = db.get_story(storyname)
         except StoryTellingException as e:
@@ -183,12 +184,12 @@ def edit_story():
     story = get_story()
     user = get_user()
 
-    with unsafe_db as db:
+    with db:
         if not db.can_edit(story, user):
             return reroute_to(home)
 
     text = request.form['text']
-    with unsafe_db as db:
+    with db:
         edit = db.edit_story(story, user, text)
     return reroute_to(edited_story, pop_story(), edit, False)
 
@@ -216,13 +217,13 @@ def add_new_story():
 
     storyname = request.form['storyname']
 
-    with unsafe_db as db:
+    with db:
         if db.story_exists(storyname):
             flash('The story "{}" already exists'.format(storyname))
             return reroute_to(create_new_story)
 
     text = request.form['text']
-    with unsafe_db as db:
+    with db:
         story, edit = db.add_story(storyname, get_user(), text)
 
     return reroute_to(edited_story, story, edit, True)
@@ -252,4 +253,5 @@ if __name__ == '__main__':
     app.debug = True
     app.secret_key = os.urandom(32)
     add_template_context(app)
+    use_named_tuple_json(app)
     app.run()

@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-from collections import namedtuple
+from util.namedtuple_factory import namedtuple
 from datetime import datetime
 
 import dateutil.parser
@@ -196,6 +196,7 @@ class StoryTellingDatabase(object):
     def _get_stories(self, user, edited):
         # type: (User, bool) -> Generator[Story, None, None]
         cmp = '=' if edited else '!='
+        print('user:', user)
         for story_id, storyname in self.db.cursor.execute(
                 'SELECT stories.id, storyname FROM edits, stories, users '
                 'WHERE users.id {} ?'.format(cmp),

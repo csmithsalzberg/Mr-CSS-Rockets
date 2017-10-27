@@ -115,3 +115,17 @@ Fixed illegal multithreaded access to sqlite connection:
         you must use a with statement to access it safely.
     I modified all the routes to use the db safely this way.
 
+senK -- 2017-10-26 22:18:02
+Fixed (de)serialization of namedtuples in sessions,
+    which were otherwise serialized as plain tuples
+    by flask.sessions._tag(), simplejson.JSONEncoder.iterencode(),
+    and simplejson.JSONDecoder.object_hook().
+    Now there is a namedtuple factor in namedtuple_factor.py
+        that keeps a global dict of namedtuples (their names mapped to types),
+        and when namedtuples are serialized, their serialized type is included,
+        and when they're deserialized, their serialized type is mapped to
+        the actual type in the global dict, which recreates the original object
+        by calling the constructor on a dict of the fields.
+    This is done by overriding flask.sessions._tag to serialize namedtuples specially,
+        and extending flask.JSONDecoder with an object hook to deserialize namedtuples.
+
