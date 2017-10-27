@@ -3,12 +3,15 @@ from __future__ import print_function
 import sys
 
 from flask import Flask
+from typing import Any, Dict
 
-context = sys.modules[__name__].__dict__  # type: dict[str, any]
+Attrs = Dict[str, Any]
+
+context = sys.modules[__name__].__dict__  # type: Attrs
 
 
 def _filter_hidden(dictionary):
-    # type: (dict[str, any]) -> dict[str, any]
+    # type: (Attrs) -> Attrs
     """Filters out any attribute starting with _, which are supposed to be hidden."""
     return {k: v for k, v in dictionary.viewitems() if not k.startswith('_')}
 
@@ -22,12 +25,12 @@ context.update(_filter_hidden_obj(__builtins__))
 
 
 def splat():
-    # type: () -> dict[str, any]
+    # type: () -> Attrs
     return context
 
 
 def if_else(first, a, b):
-    # type: (bool, any, any) -> any
+    # type: (bool, Any, Any) -> Any
     """
     Functional equivalent of conditional expression.
 

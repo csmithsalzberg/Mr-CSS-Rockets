@@ -15,6 +15,7 @@ from flask import Response
 from werkzeug.datastructures import ImmutableMultiDict
 
 from util.flask_utils import preconditions
+from util.flask_utils_types import Router
 from util.flask_utils import post_only
 from util.flask_utils import reroute_to
 from util.flask_utils import form_contains
@@ -100,7 +101,7 @@ def login():
 #    return render_template('signup.jinja')
 
 """Precondition decorator rerouting to login if is_logged_in isn't True."""
-logged_in = preconditions(login, is_logged_in)
+logged_in = preconditions(login, is_logged_in)  # type: Router
 
 
 @app.route('/auth', methods=['get', 'post'])

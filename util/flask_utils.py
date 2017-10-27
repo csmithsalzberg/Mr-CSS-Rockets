@@ -8,16 +8,14 @@ from flask import redirect
 from flask import request
 from flask import session
 from flask import url_for
+from typing import KeysView, List, Any, Dict, Set, Callable, Tuple, Type
 
 from oop import extend
-
-
-# noinspection PyUnresolvedReferences
-# from typing import KeysView
+from util.flask_utils_types import Route, Router, Precondition
 
 
 def reroute_to(route_func, *args, **kwargs):
-    # type: (callable) -> Response
+    # type: (Route) -> Response
     """
     Wrap redirect(url_for(...)) for route.func_name.
 
@@ -31,7 +29,7 @@ def reroute_to(route_func, *args, **kwargs):
 
 
 def bind_args(backup_route):
-    # type: (callable) -> callable
+    # type: (Route) -> Router
     """
     Wrap a route that calls the original route
     with args and kwargs passed through the session.
@@ -41,9 +39,11 @@ def bind_args(backup_route):
     """
 
     def binder(route_func):
+        # type: (Callable[..., Response]) -> Route
         @preconditions(backup_route, session_contains('args', 'kwargs'))
         def delegating_route():
-            d = session.__dict__  # type: dict[str, any]
+            # type: () -> Response
+            d = session.__dict__  # type: Dict[str, Any]
             return route_func(*d.pop('args'), **d.pop('kwargs'))
 
         return delegating_route
@@ -53,7 +53,7 @@ def bind_args(backup_route):
 
 @extend(Flask)
 def reroute_from(app, rule, **options):
-    # type: (Flask, str, dict[str, any]) -> callable
+    # type: (Flask, str, Dict[str, Any]) -> Router
     """
     Redirect the given rule and options to the route it is decorating.
 
@@ -64,7 +64,7 @@ def reroute_from(app, rule, **options):
     """
 
     def decorator(func_to_reroute):
-        # type: (callable) -> callable
+        # type: (Route) -> Route
         """
         Decorate a route function to add another route that redirects to this one.
 
@@ -93,12 +93,12 @@ def reroute_from(app, rule, **options):
 
 
 def _debug(obj):
-    # type: (any) -> bool
+    # type: (Any) -> bool
     return hasattr(obj, 'debug') and obj.debug
 
 
 def preconditions(backup_route, *precondition_funcs):
-    # type: (callable, callable | None) -> callable
+    # type: (Route, Tuple[Precondition]) -> Router
     """
     Assert that all the given precondition_funcs are True when a route is called.
     If any of them aren't, reroute to the given backup route.
@@ -112,9 +112,9 @@ def preconditions(backup_route, *precondition_funcs):
     """
 
     def decorator(route):
-        # type: (callable) -> callable
+        # type: (Route) -> Route
         def debug(precondition):
-            # type: (callable) -> None
+            # type: (Precondition) -> None
             # noinspection PyTypeChecker
             if _debug(preconditions) or _debug(precondition):
                 print('<{}> failed on precondition <{}>, '
@@ -142,7 +142,7 @@ preconditions.debug = True
 
 
 def method_is(http_method):
-    # type: (str) -> callable
+    # type: (str) -> Precondition
     """Assert the route is using the given HTTP method."""
     http_method = http_method.lower()
 
@@ -153,12 +153,12 @@ def method_is(http_method):
     return precondition
 
 
-post_only = method_is('post')
+post_only = method_is('post')  # type: Precondition
 post_only.debug = True
 
 
 def methods_are(*http_methods):
-    # type: (list[str]) -> callable
+    # type: (List[str]) -> Precondition
     """Assert the route is using one of the given HTTP methods."""
     http_methods = {http_method.lower() for http_method in http_methods}
 
@@ -170,7 +170,7 @@ def methods_are(*http_methods):
 
 
 def set_contains(set_, *values):
-    # type: (set[T] | KeysView[T], list[T]) -> callable
+    # type: (Set[T] | KeysView[T], List[T]) -> Precondition
     """Assert a set contains all the given values."""
     values = set(values)
 
@@ -182,8 +182,11 @@ def set_contains(set_, *values):
     return precondition
 
 
+T = Type['T']
+
+
 def dict_contains(dictionary, keys, calling_func=None):
-    # type: (dict[T, any] | KeyViewFuture, list[T], callable | None) -> callable
+    # type: (Dict[T, any] | KeysViewSupplier, List[T], Callable | callable) -> Precondition
     """Assert a dict contains all the given keys."""
     keys = set(keys)
 
@@ -200,27 +203,29 @@ def dict_contains(dictionary, keys, calling_func=None):
     return precondition
 
 
-class KeyViewFuture(object):
+class KeysViewSupplier(object):
     def __init__(self, dict_supplier):
+        # type: (Callable[[], Dict]) -> None
         self.dict_supplier = dict_supplier
 
     def viewkeys(self):
+        # type: () -> KeysView
         return self.dict_supplier().viewkeys()
 
 
 def form_contains(*fields):
-    # type: (list[str]) -> callable
+    # type: (List[str]) -> Precondition
     """Assert request.form contains all the given fields."""
-    return dict_contains(KeyViewFuture(lambda: request.form), fields, form_contains)
+    return dict_contains(KeysViewSupplier(lambda: request.form), fields, form_contains)
 
 
 def session_contains(*keys):
-    # type: (list[any]) -> callable
+    # type: (List[Any]) -> Precondition
     """Assert session contains all the given keys."""
     return dict_contains(session, keys, session_contains)
 
 
 def has_attrs(obj, *attrs):
-    # type: (any, list[str]) -> callable
+    # type: (Any, List[str]) -> callable
     """Assert an object contains all the given fields/attributes."""
     return dict_contains(obj.__dict__, attrs, has_attrs)

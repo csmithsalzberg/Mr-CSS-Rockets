@@ -3,12 +3,14 @@ from __future__ import print_function
 from flask import Flask, sessions
 from flask.json import JSONDecoder
 from flask.json import JSONEncoder
+from typing import Callable, Any, Dict, NamedTuple, Union
 
 from util.namedtuple_factory import all_namedtuples
 from util.oop import override
 
 
 def serialize_named_tuple(named_tuple):
+    # type: (NamedTuple) -> Dict[str, Any]
     fields = named_tuple._asdict()
     fields['_type'] = repr(type(named_tuple))
     return fields
@@ -16,7 +18,7 @@ def serialize_named_tuple(named_tuple):
 
 @override(sessions)
 def _tag(_super, o):
-    # type: (any) -> dict
+    # type: (Callable[Any, Any]) -> Dict[str, Any] | Any
     if hasattr(o, '_asdict'):
         return serialize_named_tuple(o)
     return _super(o)
@@ -30,7 +32,7 @@ class NamedTupleJsonEncoder(JSONEncoder):
 
     @staticmethod
     def convert(o):
-        # type: (any) -> any
+        # type: (Any) -> Dict[str, Any] | Any
         if not hasattr(o, '_asdict'):
             return o
         fields = dict(o._asdict())
@@ -38,6 +40,7 @@ class NamedTupleJsonEncoder(JSONEncoder):
         return fields
 
     def default(self, o):
+        # type: (Any) -> Dict[str, Any]
         new_o = self.convert(o)
         if new_o is o:
             return super(NamedTupleJsonEncoder, self).default(o)
@@ -51,6 +54,7 @@ class NamedTupleJsonDecoder(JSONDecoder):
 
     @staticmethod
     def object_hook(obj):
+        # type: (Any) -> Union[NamedTuple, Any]
         if '_type' not in obj:
             return obj
         return all_namedtuples[obj.pop('_type')](**obj)

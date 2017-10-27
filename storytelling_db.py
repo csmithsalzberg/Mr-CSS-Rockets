@@ -4,7 +4,7 @@ from datetime import datetime
 
 import dateutil.parser
 from passlib.hash import pbkdf2_sha256
-from typing import Generator, Tuple
+from typing import Generator, Tuple, Union
 
 from util.db import Database
 from util.namedtuple_factory import namedtuple
@@ -78,7 +78,7 @@ class StoryTellingDatabase(object):
     """
 
     def __init__(self, path='data/storytelling.db'):
-        # type: (str | unicode) -> None
+        # type: (Union[str, unicode]) -> None
         """Create DB with given name and open low level connection through `Database`"""
         self.name = path
         self.db = Database(path)
