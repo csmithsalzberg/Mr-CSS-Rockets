@@ -1,0 +1,14 @@
+{% extends "logged_in_base.jinja2" %}
+
+{% block body %}
+
+<h1>Editing {{S.storyname}}:</h1>
+<h2>Latest edit:</h2><br>
+{{S.edit}}
+
+{{br(4)}}
+<form action="/edit" method="post" id="storyedit">
+	<textarea name="text" placeholder="Insert addition to story here" form="storyedit" required></textarea>{{br(2)}}
+	<input type="submit">
+</form>
+{% endblock %}
