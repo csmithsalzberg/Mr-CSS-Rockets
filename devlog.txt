@@ -134,3 +134,6 @@ Fixed bug in StoryTellingDatabase._get_stories() that returned too many stories
     because the edits.user_id wasn't mapped to users.id
     and edits.story_id wasn't mapped to stories.id.
 
+senK -- 2017-10-28 16:59:00
+Added mechanism to simulate adding stories in util/story_builder.py.
+

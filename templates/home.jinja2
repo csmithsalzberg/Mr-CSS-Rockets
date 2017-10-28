@@ -1,13 +1,11 @@
 <!DOCTYPE html>
-{% extends "base_logged.jinja2" %}
+{% extends "logged_in_base.jinja2" %}
 
 {% block body %}
 
-    {% with messages = get_flashed_messages() %}
-        {% for message in messages %}
-            <h3>{{ message }}</h3>
-        {% endfor %}
-    {% endwith %}
+    {% include "flashes.jinja2" %}
+
+    <h1>Welcome {{ user.username }}!</h1>
 
     <h2>Edited Stories:</h2><br>
     <!--suppress HtmlUnknownTarget -->

@@ -1,5 +1,7 @@
 from __future__ import print_function
 
+from typing import Callable
+
 __authors__ = ['Khyber Sen', 'Caleb Smith-Salzburg', 'Michael Ruvinshteyn', 'Terry Guan']
 __date__ = '2017-10-30'
 
@@ -14,8 +16,8 @@ from flask import Response
 
 from werkzeug.datastructures import ImmutableMultiDict
 
+from util.flask_utils_types import Router, Precondition
 from util.flask_utils import preconditions
-from util.flask_utils_types import Router
 from util.flask_utils import post_only
 from util.flask_utils import reroute_to
 from util.flask_utils import form_contains
@@ -72,7 +74,7 @@ def pop_edit():
     return session.pop(EDIT_KEY)
 
 
-is_logged_in = session_contains(USER_KEY)
+is_logged_in = session_contains(USER_KEY)  # type: Precondition
 
 
 @app.reroute_from('/')
@@ -95,34 +97,40 @@ def login():
     return render_template('login.jinja2')
 
 
-# @app.route('/signup'):
-# def signup():
-#     # type: () -> Response
-#    return render_template('signup.jinja')
-
-"""Precondition decorator rerouting to login if is_logged_in isn't True."""
-logged_in = preconditions(login, is_logged_in)  # type: Router
-
-
-@app.route('/auth', methods=['get', 'post'])
 @preconditions(login, post_only, form_contains('username', 'password'))
-def auth():
-    # type: () -> Response
-    """
-    Authorize and login a User with username and password from POST form.
-    If username and password is wrong, flash message raised by db.
-    """
+def auth_or_signup(db_user_supplier):
+    # type: (Callable[[unicode, unicode], User]) -> Response
     username, password = get_user_info()
 
     with db:
         try:
-            user = db.get_user(username, password)
+            user = db_user_supplier(username, password)
         except StoryTellingException as e:
             flash(e.message)
             return reroute_to(login)
 
     session[USER_KEY] = user
     return reroute_to(home)
+
+
+@app.route('/signup', methods=['get', 'post'])
+def signup():
+    # type: () -> Response
+    return auth_or_signup(db.add_user)
+
+
+"""Precondition decorator rerouting to login if is_logged_in isn't True."""
+logged_in = preconditions(login, is_logged_in)  # type: Router
+
+
+@app.route('/auth', methods=['get', 'post'])
+def auth():
+    # type: () -> Response
+    """
+    Authorize and login a User with username and password from POST form.
+    If username and password is wrong, flash message raised by db.
+    """
+    return auth_or_signup(db.get_user)
 
 
 @app.route('/home')
@@ -133,6 +141,7 @@ def home():
     user = get_user()
     with db:
         return render_template('home.jinja2',
+                               user=user,
                                edited_stories=sorted(db.get_edited_stories(user)),
                                unedited_stories=sorted(db.get_unedited_stories(user)))
 

@@ -124,13 +124,13 @@ def preconditions(backup_route, *precondition_funcs):
                               backup_route.func_name),
                       file=stderr)
 
-        def rerouter():
+        def rerouter(*args, **kwargs):
             # type: () -> Response
             for precondition in precondition_funcs:
                 if not precondition():
                     debug(precondition)
                     return reroute_to(backup_route)
-            return route()
+            return route(*args, **kwargs)
 
         rerouter.func_name = route.func_name
         return rerouter

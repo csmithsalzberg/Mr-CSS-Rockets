@@ -1,10 +1,25 @@
-<!DOCTYPE html>
-
-{% extends "base_logged.jinja2" %}
+{% extends "logged_in_base.jinja2" %}
 
 {% block body %}
-	<b>{{edits[0].story.storyname}}:</b>
-	{% for edit in edits %}
-	<p>{{edit.text}}<p>
-	{% endfor %}
+    <b>{{ edits[0].story.storyname }}:</b>
+    {% for edit in edits %}
+        <p>{{ edit.text }}<p>
+    {% endfor %}
+
+
+    <table border="1">
+        <tr>
+            <th>User</th>
+            <th>Time</th>
+            <th>Edit</th>
+        </tr>
+        {% for edit in edits %}
+            <tr>
+                <td>{{ edit.user.username }}</td>
+                <td>{{ edit.time }}</td>
+                <td>{{ edit.text }}</td>
+            </tr>
+        {% endfor %}
+
+    </table>
 {% endblock body %}
