@@ -137,3 +137,6 @@ Fixed bug in StoryTellingDatabase._get_stories() that returned too many stories
 senK -- 2017-10-28 16:59:00
 Added mechanism to simulate adding stories in util/story_builder.py.
 
+senK -- 2017-10-28 20:29:26
+Fixed edit_story.jinja2 so that it works.
+

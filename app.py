@@ -211,7 +211,7 @@ def create_new_story():
     return render_template('create_new_story.jinja2')
 
 
-@app.route('/add_new_story', methods=['get', 'post'])
+@app.route('/new_story', methods=['get', 'post'])
 @logged_in
 @preconditions(create_new_story, post_only, form_contains('storyname', 'text'))
 def add_new_story():

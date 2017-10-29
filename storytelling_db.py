@@ -200,7 +200,6 @@ class StoryTellingDatabase(object):
                 'SELECT stories.id, storyname FROM edits, stories, users '
                 'WHERE user_id = users.id '
                 'AND story_id = stories.id '
-                'AND users.id = stories.id '
                 'AND users.id {} ?'.format(cmp),
                 [user.id]):
             yield Story(story_id, storyname)
