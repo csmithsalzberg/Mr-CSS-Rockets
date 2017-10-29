@@ -140,3 +140,6 @@ Added mechanism to simulate adding stories in util/story_builder.py.
 senK -- 2017-10-28 20:29:26
 Fixed edit_story.jinja2 so that it works.
 
+senK -- 2017-10-28 20:54:02
+Fixed SQL bug in get_unedited_stories.  Now done by subtracting all the edited stories by that user from all the stories using the SQL statement EXCEPT, which does set subtraction.
+

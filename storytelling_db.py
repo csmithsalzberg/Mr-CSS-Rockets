@@ -193,26 +193,24 @@ class StoryTellingDatabase(object):
                                [story.id, story.storyname])
         return self.db.result_exists()
 
-    def _get_stories(self, user, edited):
-        # type: (User, bool) -> Generator[Story, None, None]
-        cmp = '=' if edited else '!='
-        for story_id, storyname in self.db.cursor.execute(
-                'SELECT stories.id, storyname FROM edits, stories, users '
-                'WHERE user_id = users.id '
-                'AND story_id = stories.id '
-                'AND users.id {} ?'.format(cmp),
-                [user.id]):
-            yield Story(story_id, storyname)
+    _EDITED_STORIES_SQL = '''
+        SELECT stories.id, storyname FROM edits, stories, users 
+            WHERE user_id = users.id 
+            AND story_id = stories.id 
+            AND users.id = ?'''
 
     def get_edited_stories(self, user):
         # type: (User) -> Generator[Story, None, None]
-        """Yield all Stories edited by given User."""
-        return self._get_stories(user, True)
+        for story_id, storyname in self.db.cursor.execute(
+                self._EDITED_STORIES_SQL, [user.id]):
+            yield Story(story_id, storyname)
 
     def get_unedited_stories(self, user):
         # type: (User) -> Generator[Story, None, None]
-        """Yield all Stories not edited yet by given User."""
-        return self._get_stories(user, False)
+        for story_id, storyname in self.db.cursor.execute(
+                'SELECT id, storyname FROM stories EXCEPT' + self._EDITED_STORIES_SQL,
+                [user.id]):
+            yield Story(story_id, storyname)
 
     def get_edits(self, story):
         # type: (Story) -> Generator[Edit, None, None]
@@ -222,7 +220,6 @@ class StoryTellingDatabase(object):
                 'FROM edits, users, stories '
                 'WHERE user_id = users.id '
                 'AND story_id = stories.id '
-                'AND users.id = stories.id '
                 'AND stories.id = ?',
                 [story.id]):
             time = dateutil.parser.parse(time)
@@ -257,7 +254,6 @@ class StoryTellingDatabase(object):
         """Check if given User can edit given Story,
         i.e. the User hasn't edited the given Story yet."""
         for other_user in self.get_editors(story):
-            print('other_user:', other_user)
             if user.id == other_user.id:
                 return False
         return True
