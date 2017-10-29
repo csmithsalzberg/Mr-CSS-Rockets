@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+from functools import wraps
 from sys import stderr
 
 from flask import Flask
@@ -8,7 +9,7 @@ from flask import redirect
 from flask import request
 from flask import session
 from flask import url_for
-from typing import KeysView, List, Any, Dict, Set, Callable, Tuple, Type
+from typing import KeysView, List, Any, Dict, Set, Callable, Tuple, Type, Iterable
 
 from oop import extend
 from util.flask_utils_types import Route, Router, Precondition
@@ -40,6 +41,7 @@ def bind_args(backup_route):
 
     def binder(route_func):
         # type: (Callable[..., Response]) -> Route
+        @wraps(route_func)
         @preconditions(backup_route, session_contains('args', 'kwargs'))
         def delegating_route():
             # type: () -> Response
@@ -111,7 +113,7 @@ def preconditions(backup_route, *precondition_funcs):
     :return: the decorated route
     """
 
-    def decorator(route):
+    def decorator(route_func):
         # type: (Route) -> Route
         def debug(precondition):
             # type: (Precondition) -> None
@@ -119,20 +121,20 @@ def preconditions(backup_route, *precondition_funcs):
             if _debug(preconditions) or _debug(precondition):
                 print('<{}> failed on precondition <{}>, '
                       'rerouting to backup <{}>'
-                      .format(route.func_name,
+                      .format(route_func.func_name,
                               precondition.func_name,
                               backup_route.func_name),
                       file=stderr)
 
+        @wraps(route_func)
         def rerouter(*args, **kwargs):
             # type: () -> Response
             for precondition in precondition_funcs:
                 if not precondition():
                     debug(precondition)
                     return reroute_to(backup_route)
-            return route(*args, **kwargs)
+            return route_func(*args, **kwargs)
 
-        rerouter.func_name = route.func_name
         return rerouter
 
     return decorator
@@ -150,6 +152,8 @@ def method_is(http_method):
         # type: () -> bool
         return request.method.lower() == http_method
 
+    precondition.func_name = http_method + '_only'
+
     return precondition
 
 
@@ -158,7 +162,7 @@ post_only.debug = True
 
 
 def methods_are(*http_methods):
-    # type: (List[str]) -> Precondition
+    # type: (Iterable[str]) -> Precondition
     """Assert the route is using one of the given HTTP methods."""
     http_methods = {http_method.lower() for http_method in http_methods}
 
@@ -166,11 +170,13 @@ def methods_are(*http_methods):
         # type: () -> bool
         return request.method.lower() in http_methods
 
+    precondition.func_name = ', '.join(sorted(http_methods)) + ' only'
+
     return precondition
 
 
-def set_contains(set_, *values):
-    # type: (Set[T] | KeysView[T], List[T]) -> Precondition
+def set_contains(set_, values, calling_func=None):
+    # type: (Set[T] | KeysView[T], List[T], Callable | callable) -> Precondition
     """Assert a set contains all the given values."""
     values = set(values)
 
@@ -178,6 +184,13 @@ def set_contains(set_, *values):
         # type: () -> bool
         # check if set contains all values (using subset)
         return values <= set_
+
+    if calling_func is not None:
+        func_name = calling_func.func_name + '{}'
+    else:
+        func_name = set_contains.func_name + '(' + repr(set_) + ', {})'
+
+    precondition.func_name = func_name.format(repr(tuple(values)))
 
     return precondition
 
@@ -198,7 +211,11 @@ def dict_contains(dictionary, keys, calling_func=None):
     precondition.debug = True
 
     if calling_func is not None:
-        precondition.func_name = calling_func.func_name + repr(tuple(keys))
+        func_name = calling_func.func_name + '{}'
+    else:
+        func_name = dict_contains.func_name + '(' + repr(dictionary) + ', {})'
+
+    precondition.func_name = func_name.format(repr(tuple(keys)))
 
     return precondition
 

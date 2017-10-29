@@ -75,6 +75,8 @@ def pop_edit():
 
 
 is_logged_in = session_contains(USER_KEY)  # type: Precondition
+# noinspection PyTypeChecker
+is_logged_in.func_name = 'is_logged_in'
 
 
 @app.reroute_from('/')
