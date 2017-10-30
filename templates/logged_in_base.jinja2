@@ -1,5 +1,7 @@
 {% extends "base.jinja2" %}
 
-{% block body %}
-    <button formaction="/logout">Logout</button>{{ br(2) }}
-{% endblock body %}
+{% block topbody %}
+	<form action="/logout">
+    <p align="right"><button type="submit">Logout</button></p>{{ br(2) }}
+	</form>
+{% endblock topbody %}
