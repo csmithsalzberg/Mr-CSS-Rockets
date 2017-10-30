@@ -5,3 +5,5 @@ Mr. CSS Rockets
    An added feature is that the user can see what edits were made by who, and when the edits were made.
 
 2. The database is now populated with great works, so there are many interesting stories for users to add on to!
+
+Apart from this, our design proved extremely accurate!
