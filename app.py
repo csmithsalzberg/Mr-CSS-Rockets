@@ -1,37 +1,42 @@
 from __future__ import print_function
 
-from typing import Callable
-
 __authors__ = ['Khyber Sen', 'Caleb Smith-Salzburg', 'Michael Ruvinshteyn', 'Terry Guan']
 __date__ = '2017-10-30'
 
+from typing import Callable
 import os
 
-from flask import Flask
-from flask import render_template
-from flask import request
-from flask import flash
-from flask import session
-from flask import Response
+from flask import \
+    Flask, \
+    render_template, \
+    request, \
+    flash, \
+    session, \
+    Response
 
 from werkzeug.datastructures import ImmutableMultiDict
 
-from util.flask_utils_types import Router, Precondition
-from util.flask_utils import preconditions
-from util.flask_utils import post_only
-from util.flask_utils import reroute_to
-from util.flask_utils import form_contains
-from util.flask_utils import session_contains
-from util.flask_utils import bind_args
+from util.flask_utils_types import \
+    Router, \
+    Precondition
+
+from util.flask_utils import \
+    preconditions, \
+    post_only, \
+    reroute_to, \
+    form_contains, \
+    session_contains, \
+    bind_args
 
 from util.template_context import add_template_context
 from util.flask_json import use_named_tuple_json
 
-from storytelling_db import StoryTellingDatabase
-from storytelling_db import User
-from storytelling_db import Story
-from storytelling_db import Edit
-from storytelling_db import StoryTellingException
+from storytelling_db import \
+    StoryTellingDatabase, \
+    User, \
+    Story, \
+    Edit, \
+    StoryTellingException
 
 app = Flask(__name__)
 
@@ -75,7 +80,6 @@ def pop_edit():
 
 
 is_logged_in = session_contains(USER_KEY)  # type: Precondition
-# noinspection PyTypeChecker
 is_logged_in.func_name = 'is_logged_in'
 
 
@@ -83,6 +87,7 @@ is_logged_in.func_name = 'is_logged_in'
 @app.route('/welcome')
 def welcome():
     # type: () -> Response
+    session['_flashes'] = []
     return render_template('welcome.jinja2')
 
 
@@ -96,6 +101,7 @@ def get_user_info():
 @app.route('/login')
 def login():
     # type: () -> Response
+    session['_flashes'] = []
     return render_template('login.jinja2')
 
 
@@ -170,14 +176,13 @@ def read_or_edit_story():
             return reroute_to(home)
 
         session[STORY_KEY] = story
-        edits = db.get_edits(story)
         editing = db.can_edit(story, get_user())
         if editing:
             return render_template('edit_story.jinja2',
-                                   last_edit=max(edits, key=Edit.order))
+                                   last_edit=db.get_last_edit(story))
         else:
             return render_template('read_story.jinja2',
-                                   edits=sorted(edits, key=Edit.order))
+                                   edits=sorted(db.get_edits(story), key=Edit.order))
 
 
 @app.route('/edit', methods=['get', 'post'])
@@ -243,7 +248,6 @@ def add_new_story():
 
 @app.route('/edited_story', methods=['get', 'post'])
 @logged_in
-@preconditions(home, post_only)
 @bind_args(home)
 def edited_story(story, edit, is_new_story):
     # type: (Story, Edit, bool) -> Response

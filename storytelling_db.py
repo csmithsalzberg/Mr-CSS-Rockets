@@ -37,17 +37,19 @@ DB_SCHEMA = dict(
         )''',
 )
 
+password_hasher = pbkdf2_sha256.using(rounds=16)
+
 
 def hash_password(plain_password):
     # type: (str | unicode) -> str | unicode
     """Securely hash password."""
-    return pbkdf2_sha256.hash(plain_password)
+    return password_hasher.hash(plain_password)
 
 
 def verify_password(plain_password, hashed_password):
     # type: (str | unicode) -> bool
     """Verify if plain password matches the hashed password."""
-    return pbkdf2_sha256.verify(plain_password, hashed_password)
+    return password_hasher.verify(plain_password, hashed_password)
 
 
 User = namedtuple('User', ['id', 'username'])  # type: (int, unicode)
@@ -97,7 +99,8 @@ class StoryTellingDatabase(object):
     def close(self):
         # type: () -> None
         """Close and commit DB."""
-        self.db.close()
+        self.commit()
+        self.db.hard_close()
 
     def lock(self):
         # type: () -> None
@@ -124,7 +127,7 @@ class StoryTellingDatabase(object):
         # type: () -> None
         """Create all tables according to `DB_SCHEMA`."""
         map(self.db.cursor.execute, DB_SCHEMA.viewvalues())
-        self.commit()
+        self.db.commit()
 
     def clear(self):
         # type: () -> None
@@ -208,7 +211,7 @@ class StoryTellingDatabase(object):
     def get_unedited_stories(self, user):
         # type: (User) -> Generator[Story, None, None]
         for story_id, storyname in self.db.cursor.execute(
-                'SELECT id, storyname FROM stories EXCEPT' + self._EDITED_STORIES_SQL,
+                        'SELECT id, storyname FROM stories EXCEPT' + self._EDITED_STORIES_SQL,
                 [user.id]):
             yield Story(story_id, storyname)
 
@@ -220,10 +223,27 @@ class StoryTellingDatabase(object):
                 'FROM edits, users, stories '
                 'WHERE user_id = users.id '
                 'AND story_id = stories.id '
-                'AND stories.id = ?',
+                'AND stories.id = ?'
+                'ORDER BY edits.ROWID',
                 [story.id]):
             time = dateutil.parser.parse(time)
-            yield Edit(Story(story.id, story.storyname), User(user_id, username), text, time)
+            yield Edit(story, User(user_id, username), text, time)
+
+    def get_last_edit(self, story):
+        # type: (Story) -> Edit
+        sql = '''
+        SELECT users.id, username, text, time FROM edits, users
+            WHERE edits.ROWID = (
+                SELECT max(edits.ROWID) FROM edits, users, stories 
+                    WHERE user_id = users.id 
+                        AND story_id = stories.id 
+                        AND stories.id = ?
+            )
+        '''
+        self.db.cursor.execute(sql, [story.id])
+        user_id, username, text, time = self.db.cursor.fetchone()
+        time = dateutil.parser.parse(time)
+        return Edit(story, User(user_id, username), text, time)
 
     def get_editors(self, story):
         # type: (Story) -> Generator[User, None, None]
@@ -258,11 +278,15 @@ class StoryTellingDatabase(object):
                 return False
         return True
 
-    def _add_user_hard(self, username, password):
-        # type: (unicode, unicode) -> User
+    def _add_user_hard_only(self, username, password):
+        # type: (unicode, unicode) -> None
         hashed_password = hash_password(password)
         self.db.cursor.execute('INSERT INTO users VALUES (NULL, ?, ?, ?)',
                                [username, hashed_password, datetime.now().isoformat()])
+
+    def _add_user_hard(self, username, password):
+        # type: (unicode, unicode) -> User
+        self._add_user_hard_only(username, password)
         user_id = self.db.cursor.lastrowid
         self.commit()
         return User(user_id, username)
@@ -306,6 +330,7 @@ class StoryTellingDatabase(object):
         :param user: User creating the new Story
         :param text: the text starting the Story
         :return: the Story created and the first Edit
+        :rtype: Tuple[Story, Edit]
         """
         if self.story_exists(storyname):
             raise StoryTellingException('story already exists')
