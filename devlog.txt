@@ -6,33 +6,22 @@ Story Time
 Da Art of Storytellin'
 
 zone of reflection--
-Flesh out each category whenever necessary, appropriate.
- Need not be fully filled in until end of project,
- but best done as you go along.
 
 
 /////////// Zone of Reflection \\\\\\\\\\\
 ------------------------------------------
 OBSTACLES OVERCOME
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-wow we so BOSS bc...
+We were able to overcome some initial tension and everyone played an integral part on the team. 
 
-UNRESOLVED ISSUES
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-blah blah pesky bug...
-maybe some of these will move into the Obs.Ovrcm section...
+We had some trouble linking the skeleton of the code with templates to provide the information that is fed to the db and other flask routes.
 
-COOL STUFF LEARNED
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-wow! oo!...
-
-MID-DEVELOPMENT DESIGN CHANGES
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-we changed ___ to ___ bc...
+One part of the project that involved great teamwork and thought was connecting the unedited stories and edited stories to the correct template. We used a form for each story name containing the value of the storyname. This way, when clicked, the /story route uses a db method to check if the selected story has been edited or not, and then renders the matching template.
 
 LESSONS LEARNED
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-tales of wisdom gained...
+A solid plan and assignment of roles is crucial so everyone is on the same page. This is less so the case for an individual assignment,
+but for larger-scale group projects it is vital.
 ||||||||||||||||||||||||||||||||||||||||||
 
 
@@ -157,4 +146,7 @@ Updated README to reflect new requirements.txt.
 
 senK -- 2017-10-29 23:52:29
 Added builtin accounts (see builtin_accounts.csv and data/authors.txt).
+
+smith-salzbergC -- 2017-10-30 00:5:15
+Dug out bugs, updated design file, created and updated change.txt. Added to reflection zone of devlog.
 
