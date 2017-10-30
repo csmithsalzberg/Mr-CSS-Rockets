@@ -185,7 +185,7 @@ class StoryTellingDatabase(object):
         self.db.cursor.execute('SELECT id FROM stories WHERE storyname = ?', [storyname])
         result = self.db.cursor.fetchone()
         if result is None:
-            raise StoryTellingException("story doesn't exist")
+            raise StoryTellingException('story "{}" doesn\'t exist'.format(storyname))
         story_id = result[0]
         return Story(story_id, storyname)
 
@@ -300,7 +300,7 @@ class StoryTellingDatabase(object):
         raise a StoryTellingException.
         """
         if self.user_exists(username):
-            raise StoryTellingException('username already exists')
+            raise StoryTellingException('username "{}" already exists'.format(username))
         return self._add_user_hard(username, password)
 
     def _create_story_hard(self, storyname):
@@ -333,7 +333,7 @@ class StoryTellingDatabase(object):
         :rtype: Tuple[Story, Edit]
         """
         if self.story_exists(storyname):
-            raise StoryTellingException('story already exists')
+            raise StoryTellingException('story "{}" already exists'.format(storyname))
         return self._add_story_hard(storyname, user, text)
 
     def _edit_story_hard(self, story, user, text):
@@ -354,7 +354,7 @@ class StoryTellingDatabase(object):
         raise a StoryTellingException.
         """
         if not self.can_edit(story, user):
-            raise StoryTellingException('already edited this story')
+            raise StoryTellingException('already edited this story ({})'.format(story.storyname))
         return self._edit_story_hard(story, user, text)
 
 

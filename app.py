@@ -1,5 +1,7 @@
 from __future__ import print_function
 
+from sys import stderr
+
 __authors__ = ['Khyber Sen', 'Caleb Smith-Salzburg', 'Michael Ruvinshteyn', 'Terry Guan']
 __date__ = '2017-10-30'
 
@@ -115,6 +117,7 @@ def auth_or_signup(db_user_supplier):
             user = db_user_supplier(username, password)
         except StoryTellingException as e:
             flash(e.message)
+            print(e, file=stderr)
             return reroute_to(login)
 
     session[USER_KEY] = user
@@ -173,6 +176,7 @@ def read_or_edit_story():
             story = db.get_story(storyname)
         except StoryTellingException as e:
             flash(e.message)
+            print(e, file=stderr)
             return reroute_to(home)
 
         session[STORY_KEY] = story
