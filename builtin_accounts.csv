@@ -1,0 +1,9 @@
+username,password
+Khyber,Sen
+Michael,Ruvinshteyn
+Terry,Guan
+Caleb,Smith-Salzburg
+username,password
+user,pass
+admin,password
+# Any author in data/authors.txt will work as both their username and password.

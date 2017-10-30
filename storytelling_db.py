@@ -151,7 +151,7 @@ class StoryTellingDatabase(object):
         self.db.cursor.execute('SELECT id, password FROM users WHERE username = ?', [username])
         result = self.db.cursor.fetchone()
         if result is None:
-            raise StoryTellingException('wrong username')
+            raise StoryTellingException('username doesn\'t exist')
         user_id, hashed_password = result
         if not verify_password(password, hashed_password):
             raise StoryTellingException('wrong password')
