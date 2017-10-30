@@ -143,6 +143,11 @@ Fixed edit_story.jinja2 so that it works.
 senK -- 2017-10-28 20:54:02
 Fixed SQL bug in get_unedited_stories.  Now done by subtracting all the edited stories by that user from all the stories using the SQL statement EXCEPT, which does set subtraction.
 
+ruvinshteynM -- 2017-10-29 18:39:00
+Facilitated creation of stories (template for creating a new story added)
+
 senK -- 2017-10-29 20:11:22
 Fixed story_builder.py and added first 100 stories from Project Gutenberg to DB.
 
+ruvinshteynM -- 2017-10-29 20:21:00
+Fixed logout button
