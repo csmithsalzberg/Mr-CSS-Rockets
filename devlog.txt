@@ -151,3 +151,7 @@ Fixed story_builder.py and added first 100 stories from Project Gutenberg to DB.
 
 ruvinshteynM -- 2017-10-29 20:21:00
 Fixed logout button
+
+senK -- 2017-10-29 23:06:54
+Updated README to reflect new requirements.txt.
+

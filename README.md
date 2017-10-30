@@ -7,25 +7,34 @@ We are developing a site where users can update, create, and view stories. The c
 
 ### Dependencies
   * Flask
+  * typing
   * passlib
   * python-dateutil
-  * virtualenv
+  * virtualenv  
+  These dependencies (except virtualenv) are listed in `requirements.txt` 
+  and can be installed by running `pip install -r requirements.txt`.
 
 ### Launch Instructions
- 1. Clone this repo using SSH:
+ 1. Clone this repo using HTTPS:
 
-     `git clone git@github.com:csmithsalzberg/Mr-CSS-Rockets.git`
+     `git clone https://github.com/csmithsalzberg/Mr-CSS-Rockets.git`
 
-      or HTTPS:
+      or SSH:
 
-      `git clone https://github.com/csmithsalzberg/Mr-CSS-Rockets.git`
+      `git clone git@github.com:csmithsalzberg/Mr-CSS-Rockets.git`
 
- 2. For the safety of your computer, run a python virtual environment. It's just the right thing to do.
+ 2. To sandbox the dependencies, create a Python virtual environment 
+    using virtualenv.
 
- 3. Once you have a virtualenv running, run app.py:
-
-      `python app.py`
-
-       Any dependencies that are missing will be automatically installed!
+ 3. Once you have a virtualenv running for Python 2.7, 
+    first you must install the dependencies:  
+    
+        pip install -r requirements.txt  
+    Then run app.py:  
+    
+        python app.py
  
- 4. Navigate to [localhost:5000](http://localhost:5000) and follow displayed prompts!
+ 4. Navigate to [localhost:5000](http://localhost:5000) and follow the displayed prompts!  
+    The database already comes with a 100 stories written by various 'users', 
+    so you can check out and add to those stories, too, 
+    or create your own new one if you want. 
