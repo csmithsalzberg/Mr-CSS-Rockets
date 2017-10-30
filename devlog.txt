@@ -159,3 +159,6 @@ Added titles to all the pages.
 senK -- 2017-10-30 00:44:38
 Added logout button to welcome page if you're logged in.
 
+senK -- 2017-10-30 01:33:40
+Fixed flashing system, which was corrupted by accidentally overriding the default JSON deserialization for session instead of also calling the super method (it was poorly documented though).
+

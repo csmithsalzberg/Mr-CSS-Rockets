@@ -89,7 +89,6 @@ is_logged_in.func_name = 'is_logged_in'
 @app.route('/welcome')
 def welcome():
     # type: () -> Response
-    session['_flashes'] = []
     return render_template('welcome.jinja2', is_loggin_in=is_logged_in())
 
 
@@ -103,7 +102,6 @@ def get_user_info():
 @app.route('/login')
 def login():
     # type: () -> Response
-    session['_flashes'] = []
     if is_logged_in():
         return reroute_to(home)
     return render_template('login.jinja2')
@@ -157,7 +155,8 @@ def home():
         return render_template('home.jinja2',
                                user=user,
                                edited_stories=sorted(db.get_edited_stories(user)),
-                               unedited_stories=sorted(db.get_unedited_stories(user)))
+                               unedited_stories=sorted(db.get_unedited_stories(user)),
+                               )
 
 
 @app.route('/story', methods=['get', 'post'])

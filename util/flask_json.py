@@ -49,15 +49,21 @@ class NamedTupleJsonEncoder(JSONEncoder):
 
 class NamedTupleJsonDecoder(JSONDecoder):
     def __init__(self, *args, **kwargs):
-        kwargs['object_hook'] = NamedTupleJsonDecoder.object_hook
+        kwargs['object_hook'] = NamedTupleJsonDecoder.make_object_hook(
+            kwargs.get('object_hook', None))
         super(NamedTupleJsonDecoder, self).__init__(*args, **kwargs)
 
     @staticmethod
-    def object_hook(obj):
-        # type: (Any) -> Union[NamedTuple, Any]
-        if '_type' not in obj:
-            return obj
-        return all_namedtuples[obj.pop('_type')](**obj)
+    def make_object_hook(_super):
+        def object_hook(obj):
+            # type: (Any) -> Union[NamedTuple, Any]
+            if '_type' not in obj:
+                if _super is None:
+                    return obj
+                else:
+                    return _super(obj)
+            return all_namedtuples[obj.pop('_type')](**obj)
+        return object_hook
 
 
 def use_named_tuple_json(app):

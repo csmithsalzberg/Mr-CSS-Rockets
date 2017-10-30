@@ -23,6 +23,8 @@ def _filter_hidden_obj(obj):
 # add non-hidden builtins
 context.update(_filter_hidden_obj(__builtins__))
 
+context['locals'] = locals
+
 
 def splat():
     # type: () -> Attrs
