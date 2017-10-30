@@ -2,11 +2,12 @@
 
 {% block body %}
 
-<h1>Create a new story here:</h1>{{ br(4) }}
+    <h1>Create a new story here:</h1>{{ br(4) }}
 
-<form action="/new_story" method="post">
-Title: <input type="text" name="storyname" required> {{ br(2) }}
-Begin the story with its first edit: <input type="text" name="text" required> {{ br(2) }}
-<input type="submit" value="Submit">
+    <!--suppress HtmlUnknownTarget -->
+    <form action="/new_story" method="post">
+        Title: <input type="text" name="storyname" required> {{ br(2) }}
+        Begin the story with its first edit: <input type="text" name="text" required> {{ br(2) }}
+        <input type="submit" value="Submit">
 
 {% endblock body %}
