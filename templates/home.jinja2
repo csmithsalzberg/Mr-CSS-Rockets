@@ -3,9 +3,11 @@
 
 {% block body %}
 
-    {% include "flashes.jinja2" %}
+{% include "flashes.jinja2" %}
 
-    <h1>Welcome {{ user.username }}!</h1>
+    <h1>Welcome {{ user.username }}!</h1> {{ br(2) }}
+	
+	<a href="/create_new_story" style="font-size: 32px">Create a new story</a> {{ br(2) }}
 
     <h2>Edited Stories:</h2><br>
     <!--suppress HtmlUnknownTarget -->
@@ -28,7 +30,5 @@
         {% endfor %}
     </form>
 
-    {{ br(5) }}
-    <a href="/create_new_story">Create a new story</a>
 
 {% endblock body %}
