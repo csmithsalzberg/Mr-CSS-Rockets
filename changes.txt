@@ -1,0 +1,7 @@
+CSS, KS, MR, TG 
+Mr. CSS Rockets
+
+1. When a user views a story he/she already edited, the entire story is displayed. 
+   An added feature is that the user can see what edits were made by who, and when the edits were made.
+
+2. The database is now populated with great works, so there are many interesting stories for users to add on to!
