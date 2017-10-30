@@ -2,6 +2,10 @@
 
 {% block body %}
 
+    {% if is_loggin_in %}
+        {% include "logout.jinja2" %}
+    {% endif %}
+
     <h1>Welcome to Story Time!</h1><br>
     <h2>Create your own stories, or add on to others'</h2>{{ br(2) }}
     The main concept of the website is simple: make a story or add on to other stories.{{ br(2) }}

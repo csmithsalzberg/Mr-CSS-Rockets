@@ -90,7 +90,7 @@ is_logged_in.func_name = 'is_logged_in'
 def welcome():
     # type: () -> Response
     session['_flashes'] = []
-    return render_template('welcome.jinja2')
+    return render_template('welcome.jinja2', is_loggin_in=is_logged_in())
 
 
 def get_user_info():
