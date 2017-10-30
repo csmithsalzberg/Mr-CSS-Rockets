@@ -255,6 +255,7 @@ def add_new_story():
 
 @app.route('/edited_story', methods=['get', 'post'])
 @logged_in
+@preconditions(home, lambda: False)
 @bind_args(home)
 def edited_story(story, edit, is_new_story):
     # type: (Story, Edit, bool) -> Response

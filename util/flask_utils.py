@@ -24,8 +24,8 @@ def reroute_to(route_func, *args, **kwargs):
     :return: the Response from redirect(url_for(route.func_name))
     """
     if args or kwargs:
-        session.args = args
-        session.kwargs = kwargs
+        session['args'] = args
+        session['kwargs'] = kwargs
     return redirect(url_for(route_func.func_name))
 
 
@@ -41,12 +41,13 @@ def bind_args(backup_route):
 
     def binder(route_func):
         # type: (Callable[..., Response]) -> Route
-        @wraps(route_func)
         @preconditions(backup_route, session_contains('args', 'kwargs'))
+        @wraps(route_func)
         def delegating_route():
             # type: () -> Response
-            d = session.__dict__  # type: Dict[str, Any]
-            return route_func(*d.pop('args'), **d.pop('kwargs'))
+            print(session['args'])
+            print(session['kwargs'])
+            return route_func(*session.pop('args'), **session.pop('kwargs'))
 
         return delegating_route
 
