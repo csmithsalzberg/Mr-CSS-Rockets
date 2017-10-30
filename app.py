@@ -104,14 +104,17 @@ def get_user_info():
 def login():
     # type: () -> Response
     session['_flashes'] = []
+    if is_logged_in():
+        return reroute_to(home)
     return render_template('login.jinja2')
 
 
 @preconditions(login, post_only, form_contains('username', 'password'))
 def auth_or_signup(db_user_supplier):
     # type: (Callable[[unicode, unicode], User]) -> Response
+    if is_logged_in():
+        reroute_to(home)
     username, password = get_user_info()
-
     with db:
         try:
             user = db_user_supplier(username, password)
