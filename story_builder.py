@@ -314,7 +314,7 @@ class StoryBuilder(object):
 
 
 if __name__ == '__main__':
-    db = PrivilegedStoryTellingDatabase(path='data/storytelling - Copy.db')
+    db = PrivilegedStoryTellingDatabase(path='data/storytelling - GutenbergCopy.db')
 
     # StoryBuilder.save_authors('D:/gutenberg/flattened', max_authors=10000)
     story_builder = StoryBuilder(db)
