@@ -1,5 +1,7 @@
 {% extends "logged_in_base.jinja2" %}
 
+{% block title %}Read - Story Time{% endblock title %}
+
 {% block body %}
     <b>{{ edits[0].story.storyname }}:</b>
     {% for edit in edits %}
