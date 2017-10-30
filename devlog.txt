@@ -150,3 +150,12 @@ Added builtin accounts (see builtin_accounts.csv and data/authors.txt).
 smith-salzbergC -- 2017-10-30 00:5:15
 Dug out bugs, updated design file, created and updated change.txt. Added to reflection zone of devlog.
 
+senK -- 2017-10-30 00:43:27
+Login, auth, and signup all reroute to home if logged in.
+
+senK -- 2017-10-30 00:44:01
+Added titles to all the pages.
+
+senK -- 2017-10-30 00:44:38
+Added logout button to welcome page if you're logged in.
+
